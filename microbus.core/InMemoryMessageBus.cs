@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace tomware.Microbus.Core
 {
@@ -8,43 +11,82 @@ namespace tomware.Microbus.Core
   {
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions
       = new ConcurrentDictionary<Guid, Subscription>();
+    private readonly ConcurrentQueue<Subscription> _pendingSubscriptions
+      = new ConcurrentQueue<Subscription>();
+    private readonly ConcurrentQueue<Subscription> _pendingUnsubscriptions
+      = new ConcurrentQueue<Subscription>();
 
-    public Guid Subscribe<T>(IMessageHandler messageHandler) where T : IMessage
+    public Guid Subscribe<THandler, TMessage>(THandler messageHandler)
+      where THandler : IMessageHandler<TMessage>
+      where TMessage : class
     {
-      var messageType = typeof(T).FullName;
+      var messageType = typeof(TMessage).FullName;
       var subscription = new Subscription(messageType, messageHandler);
 
-      _subscriptions.TryAdd(subscription.Id, subscription);
+      _pendingSubscriptions.Enqueue(subscription);
 
       return subscription.Id;
     }
 
-    public void Publish<T>(T message) where T : IMessage
+    public async Task PublishAsync<T>(
+      T message,
+      CancellationToken token = default(CancellationToken)
+    ) where T : class
     {
-      var messageType = typeof(T).FullName;
-      var subscriptions = _subscriptions.Values.Where(s => s.Name == messageType);
-      foreach (var subscription in subscriptions)
+      Subscription sub;
+      while (_pendingUnsubscriptions.TryDequeue(out sub))
       {
-        subscription.Handler.HandleMessage(message);
+        _subscriptions.TryRemove(sub.Id, out sub);
       }
+
+      while (_pendingSubscriptions.TryDequeue(out sub))
+      {
+        _subscriptions.TryAdd(sub.Id, sub);
+      }
+
+      var list = new List<Task>();
+      foreach (var subscription in _subscriptions.Values.ToList())
+      {
+        if (token.IsCancellationRequested)
+        {
+          break;
+        }
+
+        try
+        {
+          list.Add(Task.Run(() => subscription.GetHandler<T>().Handle(message)));
+        }
+        catch
+        {
+          continue;
+        }
+      }
+
+      await Task.WhenAll(list);
     }
 
-    public void Unsubscribe(Guid subscription)
+    public void Unsubscribe(Guid id)
     {
-      _subscriptions.TryRemove(subscription, out Subscription sub);
+      var subscription = _subscriptions.FirstOrDefault(s => s.Key == id);
+      _pendingUnsubscriptions.Enqueue(subscription.Value);
     }
 
     private class Subscription
     {
+      private object Handler { get; }
+
       public Guid Id { get; }
       public string Name { get; }
-      public IMessageHandler Handler { get; }
 
-      public Subscription(string name, IMessageHandler messageHandler)
+      public Subscription(string name, object handler)
       {
         Id = Guid.NewGuid();
         Name = name;
-        Handler = messageHandler;
+        Handler = handler;
+      }
+
+      public IMessageHandler<TMessage> GetHandler<TMessage>() {
+        return Handler as IMessageHandler<TMessage>;
       }
     }
   }
