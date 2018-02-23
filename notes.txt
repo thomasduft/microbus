@@ -1,0 +1,15 @@
+RabbitMQ:
+---------
+- https://hub.docker.com/_/rabbitmq/
+- docker run -d --hostname my-rabbit --name some-rabbit -p 8080:15672 -p 5672:5672 rabbitmq:3.7.3-management
+  - guest/guest
+
+- C# client: https://github.com/EasyNetQ/EasyNetQ/wiki/Quick-Start
+
+Redis:
+------
+- https://hub.docker.com/_/redis/
+- docker run --name redis -d redis
+
+- C# client: https://stackexchange.github.io/StackExchange.Redis/
+

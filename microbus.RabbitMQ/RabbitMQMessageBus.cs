@@ -16,13 +16,13 @@ namespace tomware.Microbus.RabbitMQ
 
     public RabbitMQMessageBus()
     {
-      _bus = RabbitHutch.CreateBus("host=localhost");
+      _bus = RabbitHutch.CreateBus("host=localhost:5672;username=guest;password=guest");
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
     }
 
     public Task PublishAsync<TMessage>(TMessage message, CancellationToken token = default(CancellationToken)) where TMessage : class
     {
-      return _bus.SendAsync(QUEUE_NAME, message);
+       return _bus.SendAsync(QUEUE_NAME, message);
     }
 
     public Guid Subscribe<THandler, TMessage>(THandler messageHandler)
