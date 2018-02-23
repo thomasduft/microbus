@@ -7,8 +7,8 @@
     <ProjectGuid>{F7D420B3-1D76-4ACA-B0ED-36948FC4E0A5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>microbus.tests</RootNamespace>
-    <AssemblyName>microbus.tests</AssemblyName>
+    <RootNamespace>tomware.Microbus.Tests</RootNamespace>
+    <AssemblyName>tomware.Microbus.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -55,9 +55,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\microbus.core\microbus.core.csproj">
+    <ProjectReference Include="..\microbus.core\microbus.Core.csproj">
       <Project>{d6addb16-6491-4b86-bd64-ec830d373f58}</Project>
-      <Name>microbus.core</Name>
+      <Name>microbus.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

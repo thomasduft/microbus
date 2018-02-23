@@ -14,8 +14,8 @@ namespace tomware.Microbus.Core
     Guid Subscribe<THandler, TMessage>(THandler messageHandler)
       where THandler : IMessageHandler<TMessage>
       where TMessage : class;
-    Task PublishAsync<T>(T message, CancellationToken token = default(CancellationToken)) 
-      where T : class;
+    Task PublishAsync<TMessage>(TMessage message, CancellationToken token = default(CancellationToken)) 
+      where TMessage : class;
     void Unsubscribe(Guid subscription);
   }
 }

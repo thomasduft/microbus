@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using tomware.Microbus.Core;
 
-namespace microbus.tests
+namespace tomware.Microbus.Tests
 {
   [TestClass]
   public class InMemoryMessageBusTest
