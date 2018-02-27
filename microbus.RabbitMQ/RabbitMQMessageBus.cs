@@ -29,8 +29,7 @@ namespace tomware.Microbus.RabbitMQ
       where THandler : IMessageHandler<TMessage>
       where TMessage : class
     {
-      var messageType = typeof(TMessage).FullName;
-      var subscription = new Subscription(messageType, messageHandler);
+      var subscription = new Subscription(messageHandler);
 
       _subscriptions.TryAdd(subscription.Id, subscription);
 
@@ -49,12 +48,10 @@ namespace tomware.Microbus.RabbitMQ
       private object Handler { get; }
 
       public Guid Id { get; }
-      public string Name { get; }
 
-      public Subscription(string name, object handler)
+      public Subscription(object handler)
       {
         Id = Guid.NewGuid();
-        Name = name;
         Handler = handler;
       }
 

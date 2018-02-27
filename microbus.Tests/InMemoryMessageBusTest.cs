@@ -62,6 +62,30 @@ namespace tomware.Microbus.Tests
 
       Assert.AreEqual("Hello Test", sampleMessageHandler.MyMessage);
     }
+
+    [TestMethod]
+    public async Task PublishAsync_SampleMessage_IncreaseMessageHandlerShouldNotReceiveMessage()
+    {
+      // Arrange
+      SampleMessageHandler sampleMessageHandler = new SampleMessageHandler(string.Empty);
+      ToLowerSampleMessageHandler toLowerSampleMessageHandler = new ToLowerSampleMessageHandler("ToLower");
+      IncreaseMessageHandler increaseMessageHandler = new IncreaseMessageHandler(0);
+
+      IMessageBus messageBus = new InMemoryMessageBus();
+      messageBus.Subscribe<SampleMessageHandler, SampleMessage>(sampleMessageHandler);
+      messageBus.Subscribe<ToLowerSampleMessageHandler, SampleMessage>(toLowerSampleMessageHandler);
+      messageBus.Subscribe<IncreaseMessageHandler, IncreaseMessage>(increaseMessageHandler);
+
+      var sampleMessage = new SampleMessage("Hello Test");
+
+      // Act
+      await messageBus.PublishAsync(sampleMessage);
+
+      // Assert
+      Assert.AreEqual("Hello Test", sampleMessageHandler.MyMessage);
+      Assert.AreEqual("hello test", toLowerSampleMessageHandler.MyMessage);
+      Assert.AreEqual(0, increaseMessageHandler.Value);
+    }
   }
 
   public class SampleMessage
@@ -86,6 +110,21 @@ namespace tomware.Microbus.Tests
     public void Handle(SampleMessage message)
     {
       MyMessage = message.Message;
+    }
+  }
+
+  public class ToLowerSampleMessageHandler : IMessageHandler<SampleMessage>
+  {
+    public string MyMessage { get; set; }
+
+    public ToLowerSampleMessageHandler(string myMessage)
+    {
+      MyMessage = myMessage;
+    }
+
+    public void Handle(SampleMessage message)
+    {
+      MyMessage = message.Message.ToLower();
     }
   }
 

@@ -28,10 +28,10 @@ namespace tomware.Microbus.Core
       return subscription.Id;
     }
 
-    public async Task PublishAsync<T>(
-      T message,
+    public async Task PublishAsync<TMessage>(
+      TMessage message,
       CancellationToken token = default(CancellationToken)
-    ) where T : class
+    ) where TMessage : class
     {
       Subscription sub;
       while (_pendingUnsubscriptions.TryDequeue(out sub))
@@ -45,16 +45,15 @@ namespace tomware.Microbus.Core
       }
 
       var list = new List<Task>();
-      foreach (var subscription in _subscriptions.Values.ToList())
+      var messageType = typeof(TMessage).FullName;
+      var subscriptionsForMessageType = _subscriptions.Values.Where(x => x.MessageType == messageType);
+      foreach (var subscription in subscriptionsForMessageType)
       {
-        if (token.IsCancellationRequested)
-        {
-          break;
-        }
+        if (token.IsCancellationRequested) break;
 
         try
         {
-          list.Add(Task.Run(() => subscription.GetHandler<T>().Handle(message)));
+          list.Add(Task.Run(() => subscription.GetHandler<TMessage>().Handle(message)));
         }
         catch
         {
@@ -73,20 +72,21 @@ namespace tomware.Microbus.Core
 
     private class Subscription
     {
-      private object Handler { get; }
+      private object _handler { get; }
 
       public Guid Id { get; }
-      public string Name { get; }
+      public string MessageType { get; }
 
-      public Subscription(string name, object handler)
+      public Subscription(string messageType, object handler)
       {
         Id = Guid.NewGuid();
-        Name = name;
-        Handler = handler;
+        MessageType = messageType;
+        _handler = handler;
       }
 
-      public IMessageHandler<TMessage> GetHandler<TMessage>() {
-        return Handler as IMessageHandler<TMessage>;
+      public IMessageHandler<TMessage> GetHandler<TMessage>()
+      {
+        return _handler as IMessageHandler<TMessage>;
       }
     }
   }
