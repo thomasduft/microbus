@@ -1,4 +1,4 @@
-![Build Status](https://travis-ci.org/thomasduft/microwf.svg?branch=master)
+[![Build Status](https://travis-ci.org/thomasduft/microbus.svg?branch=master)](https://travis-ci.org/thomasduft/microbus)
 
 # microbus
 
