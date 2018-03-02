@@ -1,4 +1,4 @@
 {
   "editor.rulers": [100],
-  "dotnet-test-explorer.testProjectPath": "test/microbus.Tests"
+  "dotnet-test-explorer.testProjectPath": "test/Tests"
 }

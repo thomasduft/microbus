@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\microbus.Core\microbus.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\microbus.RabbitMQ\microbus.RabbitMQ.csproj" />
-    <ProjectReference Include="..\microbus.RabbitMQ.Messages\microbus.RabbitMQ.Messages.csproj" />
+    <ProjectReference Include="..\..\..\src\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\src\RabbitMQ\RabbitMQ.csproj" />
+    <ProjectReference Include="..\RabbitMQ.Messages\RabbitMQ.Messages.csproj" />
   </ItemGroup>
 
 </Project>
