@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>tomware.Microbus.RabbitMQ.Messages</AssemblyName>
+    <RootNamespace>tomware.Microbus.RabbitMQ.Messages</RootNamespace>
+  </PropertyGroup>
+
+</Project>

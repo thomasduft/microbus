@@ -1,4 +1,4 @@
-namespace tomware.Microbus.RabbitMQ
+namespace tomware.Microbus.RabbitMQ.Messages
 {
   public class Message
   {

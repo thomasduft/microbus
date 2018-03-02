@@ -1,8 +1,8 @@
 using System;
 using tomware.Microbus.Core;
-using tomware.Microbus.RabbitMQ;
+using tomware.Microbus.RabbitMQ.Messages;
 
-namespace microbus.RabbitMQ.Subscriber
+namespace tomware.Microbus.RabbitMQ.Subscriber
 {
   class Program
   {
