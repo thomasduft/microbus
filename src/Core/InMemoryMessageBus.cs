@@ -46,7 +46,8 @@ namespace tomware.Microbus.Core
 
       var list = new List<Task>();
       var messageType = typeof(TMessage).FullName;
-      var subscriptionsForMessageType = _subscriptions.Values.Where(x => x.MessageType == messageType);
+      var subscriptionsForMessageType = _subscriptions.Values
+        .Where(x => x.MessageType == messageType);
       foreach (var subscription in subscriptionsForMessageType)
       {
         if (token.IsCancellationRequested) break;
