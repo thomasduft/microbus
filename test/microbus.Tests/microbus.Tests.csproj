@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\microbus.Core\microbus.Core.csproj" />
+    <ProjectReference Include="..\..\src\microbus.Core\microbus.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\microbus.Core\microbus.Core.csproj" />
-    <ProjectReference Include="..\microbus.RabbitMQ\microbus.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\src\microbus.Core\microbus.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\microbus.RabbitMQ\microbus.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.Core", "microbus.Core\microbus.Core.csproj", "{D6ADDB16-6491-4B86-BD64-EC830D373F58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.Core", "src\microbus.Core\microbus.Core.csproj", "{D6ADDB16-6491-4B86-BD64-EC830D373F58}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.Tests", "microbus.Tests\microbus.Tests.csproj", "{F7D420B3-1D76-4ACA-B0ED-36948FC4E0A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.Tests", "test\microbus.Tests\microbus.Tests.csproj", "{F7D420B3-1D76-4ACA-B0ED-36948FC4E0A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.RabbitMQ", "microbus.RabbitMQ\microbus.RabbitMQ.csproj", "{DB73E083-0FC3-48DB-BD31-933BA3906EDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.RabbitMQ", "src\microbus.RabbitMQ\microbus.RabbitMQ.csproj", "{DB73E083-0FC3-48DB-BD31-933BA3906EDB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.RabbitMQ.Publisher", "microbus.RabbitMQ.Publisher\microbus.RabbitMQ.Publisher.csproj", "{BCC2791B-952C-4E5F-A59F-FEE54D0393F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.RabbitMQ.Publisher", "samples\RabbitMQ\microbus.RabbitMQ.Publisher\microbus.RabbitMQ.Publisher.csproj", "{BCC2791B-952C-4E5F-A59F-FEE54D0393F7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.RabbitMQ.Subscriber", "microbus.RabbitMQ.Subscriber\microbus.RabbitMQ.Subscriber.csproj", "{BAC146BF-4A28-41B3-BF69-D9B5C333008B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "microbus.RabbitMQ.Subscriber", "samples\RabbitMQ\microbus.RabbitMQ.Subscriber\microbus.RabbitMQ.Subscriber.csproj", "{BAC146BF-4A28-41B3-BF69-D9B5C333008B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
