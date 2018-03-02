@@ -20,6 +20,8 @@ namespace tomware.Microbus.Core
       where THandler : IMessageHandler<TMessage>
       where TMessage : class
     {
+      if (messageHandler == null) throw new ArgumentNullException(nameof(messageHandler));
+
       var messageType = typeof(TMessage).FullName;
       var subscription = new Subscription(messageType, messageHandler);
 
@@ -33,6 +35,8 @@ namespace tomware.Microbus.Core
       CancellationToken token = default(CancellationToken)
     ) where TMessage : class
     {
+      if (message == null) throw new ArgumentNullException(nameof(message));
+
       Subscription sub;
       while (_pendingUnsubscriptions.TryDequeue(out sub))
       {
