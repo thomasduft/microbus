@@ -69,9 +69,9 @@ namespace tomware.Microbus.Core
       await Task.WhenAll(list);
     }
 
-    public void Unsubscribe(Guid id)
+    public void Unsubscribe(Guid subscriptionId)
     {
-      var subscription = _subscriptions.FirstOrDefault(s => s.Key == id);
+      var subscription = _subscriptions.FirstOrDefault(s => s.Key == subscriptionId);
       _pendingUnsubscriptions.Enqueue(subscription.Value);
     }
 

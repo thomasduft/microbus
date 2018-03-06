@@ -12,17 +12,18 @@ namespace tomware.Microbus.RabbitMQ
     private IBus _bus;
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
 
-    public const string QUEUE_NAME = "the_queue";
-
     public RabbitMQMessageBus()
     {
       _bus = RabbitHutch.CreateBus("host=localhost:5672;username=guest;password=guest");
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
     }
 
-    public Task PublishAsync<TMessage>(TMessage message, CancellationToken token = default(CancellationToken)) where TMessage : class
+    public Task PublishAsync<TMessage>(
+      TMessage message,
+      CancellationToken token = default(CancellationToken)
+    ) where TMessage : class
     {
-       return _bus.SendAsync(QUEUE_NAME, message);
+      return _bus.PublishAsync(message);
     }
 
     public Guid Subscribe<THandler, TMessage>(THandler messageHandler)
@@ -33,14 +34,24 @@ namespace tomware.Microbus.RabbitMQ
 
       _subscriptions.TryAdd(subscription.Id, subscription);
 
-      _bus.Receive<TMessage>(QUEUE_NAME, x => subscription.GetHandler<TMessage>().Handle(x));
+      // subscription strategy based on configuration?!
+      // see: https://github.com/EasyNetQ/EasyNetQ/wiki/Subscribe
+      var subscriptionId = subscription.Id.ToString();
+      subscription.SubscriptionResult
+        = _bus.Subscribe<TMessage>(
+            subscriptionId,
+            x => subscription.GetHandler<TMessage>().Handle(x)
+          );
 
       return subscription.Id;
     }
 
-    public void Unsubscribe(Guid subscription)
+    public void Unsubscribe(Guid subscriptionId)
     {
-      _subscriptions.TryRemove(subscription, out Subscription sub);
+      if (_subscriptions.TryRemove(subscriptionId, out Subscription sub))
+      {
+        sub.SubscriptionResult.Dispose();
+      }
     }
 
     private class Subscription
@@ -48,6 +59,8 @@ namespace tomware.Microbus.RabbitMQ
       private object Handler { get; }
 
       public Guid Id { get; }
+
+      public ISubscriptionResult SubscriptionResult { get; set; }
 
       public Subscription(object handler)
       {
