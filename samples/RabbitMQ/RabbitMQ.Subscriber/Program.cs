@@ -8,21 +8,31 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
   {
     static void Main(string[] args)
     {
-      var handler = new MyMessageHandler();
+      var messageMessageHandler = new MessageMessageHandler();
+      var dispatchMessageMessageHandler = new DispatchMessageMessageHandler();
       var bus = new RabbitMQMessageBus();
 
-      bus.Subscribe<MyMessageHandler, Message>(handler);
-      
+      // bus.Subscribe<MessageMessageHandler, Message>(messageMessageHandler);
+      bus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>(dispatchMessageMessageHandler);
+
       Console.WriteLine("Waiting for messages...");
       Console.ReadKey();
     }
   }
 
-  public class MyMessageHandler : IMessageHandler<Message>
+  public class MessageMessageHandler : IMessageHandler<Message>
   {
     public void Handle(Message message)
     {
-      Console.WriteLine($"Message received: {message.Name}");
+      Console.WriteLine($"Message received: {message}");
+    }
+  }
+
+  public class DispatchMessageMessageHandler : IMessageHandler<DispatchMessage>
+  {
+    public void Handle(DispatchMessage message)
+    {
+      Console.WriteLine($"DispatchMessage received: {message}");
     }
   }
 }

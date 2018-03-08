@@ -7,7 +7,12 @@ using tomware.Microbus.Core;
 
 namespace tomware.Microbus.RabbitMQ
 {
-  public class RabbitMQMessageQueue : IMessageBus
+  public interface IMessageQueue : IMessageBus
+  {
+    // Marker interface for a MessageQueue
+  }
+
+  public class RabbitMQMessageQueue : IMessageQueue
   {
     private IBus _bus;
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
