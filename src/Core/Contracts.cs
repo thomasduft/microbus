@@ -16,7 +16,7 @@ namespace tomware.Microbus.Core
   public interface IMessageBus
   {
     /// <summary>
-    /// Subscribes a message hanlder.
+    /// Subscribes a message handler.
     /// </summary>
     /// <typeparam name="THandler"></typeparam>
     /// <typeparam name="TMessage"></typeparam>
@@ -33,8 +33,10 @@ namespace tomware.Microbus.Core
     /// <param name="message"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    Task PublishAsync<TMessage>(TMessage message, CancellationToken token = default(CancellationToken)) 
-      where TMessage : class;
+    Task PublishAsync<TMessage>(
+      TMessage message, 
+      CancellationToken token = default(CancellationToken)
+    ) where TMessage : class;
 
     /// <summary>
     /// Unsubscribes a subscription.
