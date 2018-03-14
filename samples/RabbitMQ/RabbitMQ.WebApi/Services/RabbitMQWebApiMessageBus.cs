@@ -14,8 +14,10 @@ namespace tomware.Microbus.RabbitMQ.WebApi.Services
     private readonly IBus _bus;
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
 
-
-    public RabbitMQWebApiMessageBus(System.IServiceProvider serviceProvider, IConfiguration configuration)
+    public RabbitMQWebApiMessageBus(
+      System.IServiceProvider serviceProvider,
+      IConfiguration configuration
+    )
     {
       var connection = configuration["RabbitMQ:Connection"];
 
