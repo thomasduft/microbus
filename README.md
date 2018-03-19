@@ -2,5 +2,4 @@
 
 # microbus
 
-A simple implementation of the 
-[Pub/Sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) pattern that exposes a common interface.
+A simple interface for implementing the [Pub/Sub](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern) pattern for different implementations.
