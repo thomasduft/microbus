@@ -13,3 +13,11 @@ Redis:
 
 - C# client: https://stackexchange.github.io/StackExchange.Redis/
 
+
+nuget:
+------
+  - docs: https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-pack?tabs=netcore2x
+  - https://garywoodfine.com/creating-nuget-package-net-core/
+
+commands:
+dotnet pack src/Core -c Release /p:PackageVersion=1.0.0 -o ./../../dist/nupkgs

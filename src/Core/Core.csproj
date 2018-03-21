@@ -4,6 +4,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>tomware.Microbus.Core</AssemblyName>
     <RootNamespace>tomware.Microbus.Core</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Description>An common interface for abstracting the Pub/Sub pattern from its concrete implementation.</Description>
+    <RepositoryUrl>https://github.com/thomasduft/microbus</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/thomasduft/microbus/blob/master/LICENSE.md</PackageLicenseUrl>
+    <Authors>Thomas Duft</Authors>
+    <Company>tomWare SOLUTIONS</Company>
+    <PackageProjectUrl>https://github.com/thomasduft/microbus</PackageProjectUrl>
+    <PackageTags>MessageBus PubSub micro</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <Copyright>2018 tomWare SOLUTIONS</Copyright>
   </PropertyGroup>
 
 </Project>
