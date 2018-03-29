@@ -1,6 +1,6 @@
 using System;
 
-namespace tomware.Microbus.RabbitMQ.Messages
+namespace RabbitMQ.Messages
 {
   public class DispatchMessage
   {

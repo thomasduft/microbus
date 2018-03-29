@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using tomware.Microbus.RabbitMQ.WebApi.Models;
-using tomware.Microbus.RabbitMQ.WebApi.Services;
+using RabbitMQ.WebApi.Models;
+using RabbitMQ.WebApi.Services;
 
 namespace RabbitMQ.WebApi.Controllers
 {

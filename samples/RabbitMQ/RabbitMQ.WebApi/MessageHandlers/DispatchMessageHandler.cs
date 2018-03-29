@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
 using tomware.Microbus.Core;
-using tomware.Microbus.RabbitMQ.Messages;
+using RabbitMQ.Messages;
 
-namespace tomware.Microbus.RabbitMQ.WebApi.MessageHandlers
+namespace RabbitMQ.WebApi.MessageHandlers
 {
   public class DispatchMessageHandler : IMessageHandler<Message>
   {

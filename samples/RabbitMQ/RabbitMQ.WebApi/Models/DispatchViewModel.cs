@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using tomware.Microbus.RabbitMQ.Messages;
+using RabbitMQ.Messages;
 
-namespace tomware.Microbus.RabbitMQ.WebApi.Models
+namespace RabbitMQ.WebApi.Models
 {
   public class DispatchViewModel
   {

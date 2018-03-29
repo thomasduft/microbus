@@ -1,7 +1,8 @@
 using System;
-using tomware.Microbus.RabbitMQ.Messages;
+using RabbitMQ.Messages;
+using tomware.Microbus.RabbitMQ;
 
-namespace tomware.Microbus.RabbitMQ.Publisher
+namespace RabbitMQ.Publisher
 {
   class Program
   {

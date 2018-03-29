@@ -6,22 +6,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using tomware.Microbus.Core;
 
-namespace tomware.Microbus.RabbitMQ.WebApi.Services
+namespace RabbitMQ.WebApi.Services
 {
   public class RabbitMQWebApiMessageBus : IMessageBus
   {
-    private readonly System.IServiceProvider _serviceProvider;
+    private readonly string _client;
     private readonly IBus _bus;
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
 
-    public RabbitMQWebApiMessageBus(
-      System.IServiceProvider serviceProvider,
-      IConfiguration configuration
-    )
+    public RabbitMQWebApiMessageBus(IConfiguration configuration)
     {
+      _client = configuration["Client"];
       var connection = configuration["RabbitMQ:Connection"];
 
-      _serviceProvider = serviceProvider;
       _bus = RabbitHutch.CreateBus(connection);
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
     }
@@ -30,38 +27,17 @@ namespace tomware.Microbus.RabbitMQ.WebApi.Services
       where THandler : IMessageHandler<TMessage>
       where TMessage : class
     {
-      /**
-       * Registering done via di framework during Startup.ConfigureServices.
-       * 
-       * Sample:
-       * public void ConfigureServices(IServiceCollection services) {
-       *  ...
-       *  services.AddSingleton<IMessageBus, RabbitMQWebApiMessageBus>();
-       *  services.AddTransient<IMessageHandler, MyMessageHandler>();
-       *  ...
-       * }
-       *
-       * public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
-       *  ...
-       *  var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
-       *  messageBus.Subscribe<DispatchMessageHandler, Message>(null);
-       *  ...
-       * }
-       */
-
-      var subscription = new Subscription();
+      var subscription = new Subscription(messageHandler);
 
       _subscriptions.TryAdd(subscription.Id, subscription);
 
       // subscription strategy based on configuration?!
       // see: https://github.com/EasyNetQ/EasyNetQ/wiki/Subscribe
-      var subscriptionId = subscription.Id.ToString();
-
-      IMessageHandler<TMessage> handler
-        = (IMessageHandler<TMessage>)_serviceProvider.GetService(typeof(THandler));
+      var subscriptionId = _client; // subscription.Id.ToString();
 
       subscription.SubscriptionResult
-        = _bus.Subscribe<TMessage>(subscriptionId, x => handler.Handle(x));
+        = _bus.Subscribe<TMessage>(subscriptionId,
+          x => subscription.GetHandler<TMessage>().Handle(x));
 
       return subscription.Id;
     }
@@ -74,20 +50,31 @@ namespace tomware.Microbus.RabbitMQ.WebApi.Services
       return _bus.PublishAsync(message);
     }
 
-    public void Unsubscribe(Guid subscription)
+    public void Unsubscribe(Guid subscriptionId)
     {
-      throw new NotImplementedException();
+      if (_subscriptions.TryRemove(subscriptionId, out Subscription sub))
+      {
+        sub.SubscriptionResult.Dispose();
+      }
     }
 
     private class Subscription
     {
+      private object _handler { get; }
+
       public Guid Id { get; }
 
       public ISubscriptionResult SubscriptionResult { get; set; }
 
-      public Subscription()
+      public Subscription(object handler)
       {
         Id = Guid.NewGuid();
+        _handler = handler;
+      }
+
+      public IMessageHandler<TMessage> GetHandler<TMessage>()
+      {
+        return _handler as IMessageHandler<TMessage>;
       }
     }
   }

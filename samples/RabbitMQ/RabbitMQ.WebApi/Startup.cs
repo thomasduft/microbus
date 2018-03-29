@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
 using tomware.Microbus.Core;
 using tomware.Microbus.RabbitMQ;
-using tomware.Microbus.RabbitMQ.Messages;
-using tomware.Microbus.RabbitMQ.WebApi.MessageHandlers;
-using tomware.Microbus.RabbitMQ.WebApi.Services;
+using RabbitMQ.Messages;
+using RabbitMQ.WebApi.MessageHandlers;
+using RabbitMQ.WebApi.Services;
 
 namespace RabbitMQ.WebApi
 {
@@ -53,9 +53,7 @@ namespace RabbitMQ.WebApi
       }
 
       // Subscribing MessageHandlers
-      var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
-      messageBus.Subscribe<DispatchMessageHandler, Message>(null);
-
+      app.UseMessageHandlers();
 
       app.UseSwagger();
       app.UseSwaggerUI(c =>

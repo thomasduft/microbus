@@ -56,7 +56,7 @@ namespace tomware.Microbus.RabbitMQ
 
     private class Subscription
     {
-      private object Handler { get; }
+      private object _handler { get; }
 
       public Guid Id { get; }
 
@@ -65,12 +65,12 @@ namespace tomware.Microbus.RabbitMQ
       public Subscription(object handler)
       {
         Id = Guid.NewGuid();
-        Handler = handler;
+        _handler = handler;
       }
 
       public IMessageHandler<TMessage> GetHandler<TMessage>()
       {
-        return Handler as IMessageHandler<TMessage>;
+        return _handler as IMessageHandler<TMessage>;
       }
     }
   }

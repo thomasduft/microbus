@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using tomware.Microbus.Core;
-using tomware.Microbus.RabbitMQ.WebApi.Models;
+using RabbitMQ.WebApi.Models;
 
-namespace tomware.Microbus.RabbitMQ.WebApi.Services
+namespace RabbitMQ.WebApi.Services
 {
   public interface IDispatchService
   {

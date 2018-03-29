@@ -1,6 +1,6 @@
 using System;
 using tomware.Microbus.Core;
-using tomware.Microbus.RabbitMQ.Messages;
+using RabbitMQ.Messages;
 
 namespace tomware.Microbus.RabbitMQ.Subscriber
 {

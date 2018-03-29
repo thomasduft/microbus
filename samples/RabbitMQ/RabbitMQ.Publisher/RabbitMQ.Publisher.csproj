@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>tomware.Microbus.RabbitMQ.Publisher</AssemblyName>
-    <RootNamespace>tomware.Microbus.RabbitMQ.Publisher</RootNamespace>
+    <AssemblyName>RabbitMQ.Publisher</AssemblyName>
+    <RootNamespace>RabbitMQ.Publisher</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

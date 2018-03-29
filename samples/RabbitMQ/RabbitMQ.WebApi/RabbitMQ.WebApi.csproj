@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>tomware.Microbus.RabbitMQ.WebApi</AssemblyName>
-    <RootNamespace>tomware.Microbus.RabbitMQ.WebApi</RootNamespace>
+    <AssemblyName>RabbitMQ.WebApi</AssemblyName>
+    <RootNamespace>RabbitMQ.WebApi</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
