@@ -58,7 +58,7 @@ namespace tomware.Microbus.Core
 
         try
         {
-          list.Add(Task.Run(() => subscription.GetHandler<TMessage>().Handle(message)));
+          list.Add(subscription.GetHandler<TMessage>().Handle(message));
         }
         catch
         {
