@@ -107,9 +107,11 @@ namespace tomware.Microbus.Tests
       MyMessage = myMessage;
     }
 
-    public void Handle(SampleMessage message)
+    public async Task Handle(SampleMessage message)
     {
       MyMessage = message.Message;
+
+      await Task.FromResult(0);
     }
   }
 
@@ -122,9 +124,11 @@ namespace tomware.Microbus.Tests
       MyMessage = myMessage;
     }
 
-    public void Handle(SampleMessage message)
+    public async Task Handle(SampleMessage message)
     {
       MyMessage = message.Message.ToLower();
+
+      await Task.FromResult(0);
     }
   }
 
@@ -147,9 +151,11 @@ namespace tomware.Microbus.Tests
       Value = initialValue;
     }
 
-    public void Handle(IncreaseMessage message)
+    public async Task Handle(IncreaseMessage message)
     {
       Value += message.Increase;
+
+      await Task.FromResult(0);
     }
   }
 }

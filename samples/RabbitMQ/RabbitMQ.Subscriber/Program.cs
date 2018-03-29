@@ -1,6 +1,7 @@
 using System;
 using tomware.Microbus.Core;
 using RabbitMQ.Messages;
+using System.Threading.Tasks;
 
 namespace tomware.Microbus.RabbitMQ.Subscriber
 {
@@ -22,17 +23,21 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
 
   public class MessageMessageHandler : IMessageHandler<Message>
   {
-    public void Handle(Message message)
+    public async Task Handle(Message message)
     {
       Console.WriteLine($"Message received: {message}");
+
+      await Task.FromResult(0);
     }
   }
 
   public class DispatchMessageMessageHandler : IMessageHandler<DispatchMessage>
   {
-    public void Handle(DispatchMessage message)
+    public async Task Handle(DispatchMessage message)
     {
       Console.WriteLine($"DispatchMessage received: {message}");
+
+      await Task.FromResult(0);
     }
   }
 }

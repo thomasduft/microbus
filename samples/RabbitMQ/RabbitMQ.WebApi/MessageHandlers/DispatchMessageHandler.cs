@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using tomware.Microbus.Core;
 using RabbitMQ.Messages;
+using System.Threading.Tasks;
 
 namespace RabbitMQ.WebApi.MessageHandlers
 {
@@ -15,14 +16,15 @@ namespace RabbitMQ.WebApi.MessageHandlers
       _messageBus = messageBus;
     }
 
-    public void Handle(Message message)
+    public async Task Handle(Message message)
     {
       _logger.LogInformation($"Receiving message {message}");
 
       var dispatchMessage = DispatchMessage.FromMessage(message);
 
       _logger.LogInformation($"Sending dispatch message {dispatchMessage}...");
-      _messageBus.PublishAsync(dispatchMessage);
+      
+      await _messageBus.PublishAsync(dispatchMessage);
     }
   }
 }

@@ -10,7 +10,7 @@ namespace tomware.Microbus.Core
     /// Handles the incomming message.
     /// </summary>
     /// <param name="message"></param>
-    void Handle(TMessage message);
+    Task Handle(TMessage message);
   }
 
   public interface IMessageBus
