@@ -45,7 +45,11 @@ namespace RabbitMQ.WebApi
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    public void Configure(
+      IApplicationBuilder app,
+      IHostingEnvironment env,
+      IApplicationLifetime appLifetime
+    )
     {
       if (env.IsDevelopment())
       {
@@ -54,6 +58,7 @@ namespace RabbitMQ.WebApi
 
       // Subscribing MessageHandlers
       app.UseMessageHandlers();
+      appLifetime.ApplicationStopping.Register(() => OnShutdown(app));
 
       app.UseSwagger();
       app.UseSwaggerUI(c =>
@@ -62,6 +67,14 @@ namespace RabbitMQ.WebApi
       });
 
       app.UseMvc();
+    }
+
+    private void OnShutdown(IApplicationBuilder app)
+    {
+      var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+      if (messageBus != null) {
+        ((RabbitMQWebApiMessageBus)messageBus).Dispose();
+      }
     }
   }
 }

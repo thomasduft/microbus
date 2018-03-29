@@ -8,7 +8,7 @@ using tomware.Microbus.Core;
 
 namespace RabbitMQ.WebApi.Services
 {
-  public class RabbitMQWebApiMessageBus : IMessageBus
+  public class RabbitMQWebApiMessageBus : IMessageBus, IDisposable
   {
     private readonly string _client;
     private readonly IBus _bus;
@@ -33,7 +33,7 @@ namespace RabbitMQ.WebApi.Services
 
       // subscription strategy based on configuration?!
       // see: https://github.com/EasyNetQ/EasyNetQ/wiki/Subscribe
-      var subscriptionId = _client; // subscription.Id.ToString();
+      var subscriptionId = _client; // Environment.Machinename, subscription.Id.ToString();
 
       subscription.SubscriptionResult
         = _bus.Subscribe<TMessage>(subscriptionId,
@@ -55,6 +55,13 @@ namespace RabbitMQ.WebApi.Services
       if (_subscriptions.TryRemove(subscriptionId, out Subscription sub))
       {
         sub.SubscriptionResult.Dispose();
+      }
+    }
+
+    public void Dispose()
+    {
+      if (_bus != null && _bus.IsConnected) {
+        _bus.SafeDispose();
       }
     }
 
