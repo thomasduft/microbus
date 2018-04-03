@@ -111,7 +111,7 @@ namespace tomware.Microbus.Tests
     {
       MyMessage = message.Message;
 
-      await Task.FromResult(0);
+      await Task.CompletedTask;
     }
   }
 
@@ -128,7 +128,7 @@ namespace tomware.Microbus.Tests
     {
       MyMessage = message.Message.ToLower();
 
-      await Task.FromResult(0);
+      await Task.CompletedTask;
     }
   }
 
@@ -155,7 +155,7 @@ namespace tomware.Microbus.Tests
     {
       Value += message.Increase;
 
-      await Task.FromResult(0);
+      await Task.CompletedTask;
     }
   }
 }

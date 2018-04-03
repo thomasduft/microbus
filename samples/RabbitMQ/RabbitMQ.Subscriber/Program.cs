@@ -27,7 +27,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
     {
       Console.WriteLine($"Message received: {message}");
 
-      await Task.FromResult(0);
+      await Task.CompletedTask;
     }
   }
 
@@ -37,7 +37,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
     {
       Console.WriteLine($"DispatchMessage received: {message}");
 
-      await Task.FromResult(0);
+      await Task.CompletedTask;
     }
   }
 }
