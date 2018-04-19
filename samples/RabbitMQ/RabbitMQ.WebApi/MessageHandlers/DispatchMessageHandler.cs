@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging;
-using tomware.Microbus.Core;
 using RabbitMQ.Messages;
+using System.Threading;
 using System.Threading.Tasks;
+using tomware.Microbus.Core;
 
 namespace RabbitMQ.WebApi.MessageHandlers
 {
@@ -10,13 +11,13 @@ namespace RabbitMQ.WebApi.MessageHandlers
     private readonly ILogger<DispatchMessageHandler> _logger;
     private readonly IMessageBus _messageBus;
 
-    public DispatchMessageHandler(ILoggerFactory loggerFactory, IMessageBus messageBus)
+    public DispatchMessageHandler(ILogger<DispatchMessageHandler> logger, IMessageBus messageBus)
     {
-      _logger = loggerFactory.CreateLogger<DispatchMessageHandler>();
+      _logger = logger;
       _messageBus = messageBus;
     }
 
-    public async Task Handle(Message message)
+    public async Task Handle(Message message, CancellationToken token = default(CancellationToken))
     {
       _logger.LogInformation($"Receiving message {message}");
 

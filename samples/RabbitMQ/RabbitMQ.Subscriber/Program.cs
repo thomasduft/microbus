@@ -1,7 +1,9 @@
 using System;
 using tomware.Microbus.Core;
-using RabbitMQ.Messages;
 using System.Threading.Tasks;
+using System.Threading;
+using RabbitMQ.Messages;
+using RabbitMQ.MessageBus;
 
 namespace tomware.Microbus.RabbitMQ.Subscriber
 {
@@ -14,7 +16,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
       var bus = new RabbitMQMessageBus();
 
       // bus.Subscribe<MessageMessageHandler, Message>(messageMessageHandler);
-      bus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>(dispatchMessageMessageHandler);
+      bus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>();
 
       Console.WriteLine("Waiting for messages...");
       Console.ReadKey();
@@ -23,7 +25,10 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
 
   public class MessageMessageHandler : IMessageHandler<Message>
   {
-    public async Task Handle(Message message)
+    public async Task Handle(
+      Message message, 
+      CancellationToken token = default(CancellationToken)
+    )
     {
       Console.WriteLine($"Message received: {message}");
 
@@ -33,7 +38,10 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
 
   public class DispatchMessageMessageHandler : IMessageHandler<DispatchMessage>
   {
-    public async Task Handle(DispatchMessage message)
+    public async Task Handle(
+      DispatchMessage message, 
+      CancellationToken token = default(CancellationToken)
+    )
     {
       Console.WriteLine($"DispatchMessage received: {message}");
 

@@ -11,54 +11,43 @@ namespace tomware.Microbus.Core
   {
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions
       = new ConcurrentDictionary<Guid, Subscription>();
-    private readonly ConcurrentQueue<Subscription> _pendingSubscriptions
-      = new ConcurrentQueue<Subscription>();
-    private readonly ConcurrentQueue<Subscription> _pendingUnsubscriptions
-      = new ConcurrentQueue<Subscription>();
 
-    public Guid Subscribe<THandler, TMessage>(THandler messageHandler)
+    private readonly IServiceProvider _serviceProvider;
+
+    public InMemoryMessageBus(IServiceProvider serviceProvider)
+    {
+      _serviceProvider = serviceProvider;
+    }
+
+    public Guid Subscribe<THandler, TMessage>()
       where THandler : IMessageHandler<TMessage>
       where TMessage : class
     {
-      if (messageHandler == null) throw new ArgumentNullException(nameof(messageHandler));
+      var subscription = new Subscription(typeof(THandler), typeof(TMessage));
 
-      var messageType = typeof(TMessage).FullName;
-      var subscription = new Subscription(messageType, messageHandler);
-
-      _pendingSubscriptions.Enqueue(subscription);
+      _subscriptions.TryAdd(subscription.Id, subscription);
 
       return subscription.Id;
     }
 
     public async Task PublishAsync<TMessage>(
-      TMessage message,
-      CancellationToken token = default(CancellationToken)
-    ) where TMessage : class
+     TMessage message,
+     CancellationToken token = default(CancellationToken)
+   ) where TMessage : class
     {
       if (message == null) throw new ArgumentNullException(nameof(message));
 
-      Subscription sub;
-      while (_pendingUnsubscriptions.TryDequeue(out sub))
-      {
-        _subscriptions.TryRemove(sub.Id, out sub);
-      }
-
-      while (_pendingSubscriptions.TryDequeue(out sub))
-      {
-        _subscriptions.TryAdd(sub.Id, sub);
-      }
-
-      var list = new List<Task>();
-      var messageType = typeof(TMessage).FullName;
       var subscriptionsForMessageType = _subscriptions.Values
-        .Where(x => x.MessageType == messageType);
+        .Where(_ => _.MessageType == typeof(TMessage));
+
+      var tasks = new List<Task>();
       foreach (var subscription in subscriptionsForMessageType)
       {
         if (token.IsCancellationRequested) break;
 
         try
         {
-          list.Add(subscription.GetHandler<TMessage>().Handle(message));
+          tasks.Add(subscription.Handle(_serviceProvider, message, token));
         }
         catch
         {
@@ -66,32 +55,48 @@ namespace tomware.Microbus.Core
         }
       }
 
-      await Task.WhenAll(list);
+      await Task.WhenAll(tasks);
     }
 
-    public void Unsubscribe(Guid subscriptionId)
+    public bool Unsubscribe(Guid subscription)
     {
-      var subscription = _subscriptions.FirstOrDefault(s => s.Key == subscriptionId);
-      _pendingUnsubscriptions.Enqueue(subscription.Value);
+      Subscription sub = null;
+      return _subscriptions.TryRemove(subscription, out sub);
     }
 
     private class Subscription
     {
-      private object _handler { get; }
+      private Type _handlerType { get; }
+      private Type _messageType { get; }
 
       public Guid Id { get; }
-      public string MessageType { get; }
 
-      public Subscription(string messageType, object handler)
+      public Type HandlerType => _handlerType;
+
+      public Type MessageType => _messageType;
+
+      public string HandlerTypeName => _handlerType.Name;
+
+      public string MessageTypeName => _messageType.Name;
+
+      public Subscription(Type handlerType, Type messageType)
       {
         Id = Guid.NewGuid();
-        MessageType = messageType;
-        _handler = handler;
+        _handlerType = handlerType;
+        _messageType = messageType;
       }
 
-      public IMessageHandler<TMessage> GetHandler<TMessage>()
+      public Task Handle<TMessage>(
+        IServiceProvider serviceProvider,
+        TMessage message,
+        CancellationToken token
+      )
       {
-        return _handler as IMessageHandler<TMessage>;
+        var instance = serviceProvider.GetService(_handlerType);
+        var concreteType = typeof(IMessageHandler<>).MakeGenericType(_messageType);
+        var handler = instance as IMessageHandler<TMessage>;
+
+        return handler.Handle(message, token);
       }
     }
   }

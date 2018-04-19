@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
-using tomware.Microbus.Core;
-using tomware.Microbus.RabbitMQ;
-using RabbitMQ.Messages;
+using RabbitMQ.MessageBus;
 using RabbitMQ.WebApi.MessageHandlers;
 using RabbitMQ.WebApi.Services;
+using Swashbuckle.AspNetCore.Swagger;
+using tomware.Microbus.Core;
 
 namespace RabbitMQ.WebApi
 {
@@ -38,7 +37,7 @@ namespace RabbitMQ.WebApi
       });
 
       // Services
-      services.AddSingleton<IMessageBus, RabbitMQWebApiMessageBus>();
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddTransient<IDispatchService, DispatchService>();
 
       services.AddTransient<DispatchMessageHandler>();
@@ -73,7 +72,7 @@ namespace RabbitMQ.WebApi
     {
       var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
       if (messageBus != null) {
-        ((RabbitMQWebApiMessageBus)messageBus).Dispose();
+        ((RabbitMQMessageBus)messageBus).Dispose();
       }
     }
   }

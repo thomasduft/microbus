@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\src\RabbitMQ\RabbitMQ.csproj" />
+    <ProjectReference Include="..\RabbitMQ.MessageBus\RabbitMQ.MessageBus.csproj" />
     <ProjectReference Include="..\RabbitMQ.Messages\RabbitMQ.Messages.csproj" />
   </ItemGroup>
 

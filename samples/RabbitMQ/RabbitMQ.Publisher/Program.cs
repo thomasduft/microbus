@@ -1,6 +1,6 @@
 using System;
+using RabbitMQ.MessageBus;
 using RabbitMQ.Messages;
-using tomware.Microbus.RabbitMQ;
 
 namespace RabbitMQ.Publisher
 {

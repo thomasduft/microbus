@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
       var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
 
       var dispatcher = app.ApplicationServices.GetRequiredService<DispatchMessageHandler>();
-      messageBus.Subscribe<DispatchMessageHandler, Message>(dispatcher);
+      messageBus.Subscribe<DispatchMessageHandler, Message>();
 
       return app;
     }

@@ -1,4 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using tomware.Microbus.Core;
 
@@ -11,9 +14,14 @@ namespace tomware.Microbus.Tests
     public async Task PublishAsync_SampleMessage_MessageHandlerHasSampleMessageReceived()
     {
       // Arrange
-      IMessageBus messageBus = new InMemoryMessageBus();
-      SampleMessageHandler sampleMessageHandler = new SampleMessageHandler(string.Empty);
-      messageBus.Subscribe<SampleMessageHandler, SampleMessage>(sampleMessageHandler);
+      IServiceCollection services = new ServiceCollection();
+      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<SampleMessageHandler>();
+      IServiceProvider provider = services.BuildServiceProvider();
+
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      SampleMessageHandler sampleMessageHandler = provider.GetRequiredService<SampleMessageHandler>();
+      messageBus.Subscribe<SampleMessageHandler, SampleMessage>();
 
       var sampleMessage = new SampleMessage("Hello Test");
 
@@ -28,9 +36,14 @@ namespace tomware.Microbus.Tests
     public async Task PublishAsync_IncreaseMessageInitialValueIs0_FinalValueIs42()
     {
       // Arrange
-      IMessageBus messageBus = new InMemoryMessageBus();
-      IncreaseMessageHandler handler = new IncreaseMessageHandler(0);
-      messageBus.Subscribe<IncreaseMessageHandler, IncreaseMessage>(handler);
+      IServiceCollection services = new ServiceCollection();
+      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<IncreaseMessageHandler>();
+      IServiceProvider provider = services.BuildServiceProvider();
+
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      IncreaseMessageHandler handler = provider.GetRequiredService<IncreaseMessageHandler>();
+      messageBus.Subscribe<IncreaseMessageHandler, IncreaseMessage>();
 
       var firstMessage = new IncreaseMessage(40);
       var secondMessage = new IncreaseMessage(2);
@@ -47,9 +60,14 @@ namespace tomware.Microbus.Tests
     public async Task Unsubscribe_SampleMessage_NoMessageReceived()
     {
       // Arrange
-      IMessageBus messageBus = new InMemoryMessageBus();
-      SampleMessageHandler sampleMessageHandler = new SampleMessageHandler(string.Empty);
-      var subscription = messageBus.Subscribe<SampleMessageHandler, SampleMessage>(sampleMessageHandler);
+      IServiceCollection services = new ServiceCollection();
+      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<SampleMessageHandler>();
+      IServiceProvider provider = services.BuildServiceProvider();
+
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      SampleMessageHandler sampleMessageHandler = provider.GetRequiredService<SampleMessageHandler>();
+      var subscription = messageBus.Subscribe<SampleMessageHandler, SampleMessage>();
 
       await messageBus.PublishAsync(new SampleMessage("Hello Test"));
       Assert.AreEqual("Hello Test", sampleMessageHandler.MyMessage);
@@ -67,14 +85,21 @@ namespace tomware.Microbus.Tests
     public async Task PublishAsync_SampleMessage_IncreaseMessageHandlerShouldNotReceiveMessage()
     {
       // Arrange
-      SampleMessageHandler sampleMessageHandler = new SampleMessageHandler(string.Empty);
-      ToLowerSampleMessageHandler toLowerSampleMessageHandler = new ToLowerSampleMessageHandler("ToLower");
-      IncreaseMessageHandler increaseMessageHandler = new IncreaseMessageHandler(0);
+      IServiceCollection services = new ServiceCollection();
+      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<SampleMessageHandler>();
+      services.AddSingleton<ToLowerSampleMessageHandler>();
+      services.AddSingleton<IncreaseMessageHandler>();
+      IServiceProvider provider = services.BuildServiceProvider();
 
-      IMessageBus messageBus = new InMemoryMessageBus();
-      messageBus.Subscribe<SampleMessageHandler, SampleMessage>(sampleMessageHandler);
-      messageBus.Subscribe<ToLowerSampleMessageHandler, SampleMessage>(toLowerSampleMessageHandler);
-      messageBus.Subscribe<IncreaseMessageHandler, IncreaseMessage>(increaseMessageHandler);
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      SampleMessageHandler sampleMessageHandler = provider.GetRequiredService<SampleMessageHandler>();
+      ToLowerSampleMessageHandler toLowerSampleMessageHandler = provider.GetRequiredService<ToLowerSampleMessageHandler>();
+      IncreaseMessageHandler increaseMessageHandler = provider.GetRequiredService<IncreaseMessageHandler>();
+
+      messageBus.Subscribe<SampleMessageHandler, SampleMessage>();
+      messageBus.Subscribe<ToLowerSampleMessageHandler, SampleMessage>();
+      messageBus.Subscribe<IncreaseMessageHandler, IncreaseMessage>();
 
       var sampleMessage = new SampleMessage("Hello Test");
 
@@ -102,12 +127,15 @@ namespace tomware.Microbus.Tests
   {
     public string MyMessage { get; set; }
 
-    public SampleMessageHandler(string myMessage)
+    public SampleMessageHandler()
     {
-      MyMessage = myMessage;
+      MyMessage = string.Empty;
     }
 
-    public async Task Handle(SampleMessage message)
+    public async Task Handle(
+      SampleMessage message,
+      CancellationToken token = default(CancellationToken)
+    )
     {
       MyMessage = message.Message;
 
@@ -119,12 +147,15 @@ namespace tomware.Microbus.Tests
   {
     public string MyMessage { get; set; }
 
-    public ToLowerSampleMessageHandler(string myMessage)
+    public ToLowerSampleMessageHandler()
     {
-      MyMessage = myMessage;
+      MyMessage = "ToLower";
     }
 
-    public async Task Handle(SampleMessage message)
+    public async Task Handle(
+      SampleMessage message,
+      CancellationToken token = default(CancellationToken)
+    )
     {
       MyMessage = message.Message.ToLower();
 
@@ -146,12 +177,15 @@ namespace tomware.Microbus.Tests
   {
     public int Value { get; set; }
 
-    public IncreaseMessageHandler(int initialValue)
+    public IncreaseMessageHandler()
     {
-      Value = initialValue;
+      Value = 0;
     }
 
-    public async Task Handle(IncreaseMessage message)
+    public async Task Handle(
+      IncreaseMessage message,
+      CancellationToken token = default(CancellationToken)
+    )
     {
       Value += message.Increase;
 
