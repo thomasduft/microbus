@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using RabbitMQ.Messages;
 using RabbitMQ.MessageBus;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace tomware.Microbus.RabbitMQ.Subscriber
 {
@@ -11,12 +12,15 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
   {
     static void Main(string[] args)
     {
-      var messageMessageHandler = new MessageMessageHandler();
-      var dispatchMessageMessageHandler = new DispatchMessageMessageHandler();
-      var bus = new RabbitMQMessageBus();
+      IServiceCollection services = new ServiceCollection();
+      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<MessageMessageHandler>();
+      services.AddSingleton<DispatchMessageMessageHandler>();
+      IServiceProvider provider = services.BuildServiceProvider();
 
-      // bus.Subscribe<MessageMessageHandler, Message>(messageMessageHandler);
-      bus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>();
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      messageBus.Subscribe<MessageMessageHandler, Message>();
+      messageBus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>();
 
       Console.WriteLine("Waiting for messages...");
       Console.ReadKey();
@@ -26,7 +30,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
   public class MessageMessageHandler : IMessageHandler<Message>
   {
     public async Task Handle(
-      Message message, 
+      Message message,
       CancellationToken token = default(CancellationToken)
     )
     {
@@ -39,7 +43,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
   public class DispatchMessageMessageHandler : IMessageHandler<DispatchMessage>
   {
     public async Task Handle(
-      DispatchMessage message, 
+      DispatchMessage message,
       CancellationToken token = default(CancellationToken)
     )
     {

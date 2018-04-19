@@ -1,6 +1,8 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.MessageBus;
 using RabbitMQ.Messages;
+using tomware.Microbus.Core;
 
 namespace RabbitMQ.Publisher
 {
@@ -8,11 +10,15 @@ namespace RabbitMQ.Publisher
   {
     static void Main(string[] args)
     {
-      var bus = new RabbitMQMessageBus();
+      IServiceCollection services = new ServiceCollection();
+      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      IServiceProvider provider = services.BuildServiceProvider();
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      
       var messages = 5000;
       for (int i = 0; i < messages; i++)
       {
-        bus.PublishAsync(new Message
+        messageBus.PublishAsync(new Message
         {
           Id = i,
           Name = $"MyNumberIs_{i}"
