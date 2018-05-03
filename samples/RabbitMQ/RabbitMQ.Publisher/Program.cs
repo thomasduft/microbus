@@ -11,7 +11,7 @@ namespace RabbitMQ.Publisher
     static void Main(string[] args)
     {
       IServiceCollection services = new ServiceCollection();
-      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       IServiceProvider provider = services.BuildServiceProvider();
       IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
       

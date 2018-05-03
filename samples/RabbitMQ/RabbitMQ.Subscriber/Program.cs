@@ -13,7 +13,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
     static void Main(string[] args)
     {
       IServiceCollection services = new ServiceCollection();
-      services.AddSingleton<IMessageBus, InMemoryMessageBus>();
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddSingleton<MessageMessageHandler>();
       services.AddSingleton<DispatchMessageMessageHandler>();
       IServiceProvider provider = services.BuildServiceProvider();
