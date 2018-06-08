@@ -2,12 +2,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
-using tomware.Microbus.Core;
-using tomware.Microbus.RabbitMQ;
-using RabbitMQ.Messages;
+using RabbitMQ.MessageBus;
 using RabbitMQ.WebApi.MessageHandlers;
 using RabbitMQ.WebApi.Services;
+using Swashbuckle.AspNetCore.Swagger;
+using tomware.Microbus.Core;
 
 namespace RabbitMQ.WebApi
 {
@@ -38,10 +37,17 @@ namespace RabbitMQ.WebApi
       });
 
       // Services
-      services.AddSingleton<IMessageBus, RabbitMQWebApiMessageBus>();
-      services.AddTransient<IDispatchService, DispatchService>();
-
+      services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
+      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
+        ctx => new RabbitMQMessageBusConfiguration(
+          "WebApi",
+          "host=localhost;username=guest;password=guest",
+        5)
+      );
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddTransient<DispatchMessageHandler>();
+
+      services.AddTransient<IDispatchService, DispatchService>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,8 +78,9 @@ namespace RabbitMQ.WebApi
     private void OnShutdown(IApplicationBuilder app)
     {
       var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
-      if (messageBus != null) {
-        ((RabbitMQWebApiMessageBus)messageBus).Dispose();
+      if (messageBus != null)
+      {
+        ((RabbitMQMessageBus)messageBus).Dispose();
       }
     }
   }

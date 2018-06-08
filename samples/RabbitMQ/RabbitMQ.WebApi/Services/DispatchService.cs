@@ -15,9 +15,9 @@ namespace RabbitMQ.WebApi.Services
     private readonly ILogger<DispatchService> _logger;
     private readonly IMessageBus _messageBus;
 
-    public DispatchService(ILoggerFactory loggerFactory, IMessageBus messageBus)
+    public DispatchService(ILogger<DispatchService> logger, IMessageBus messageBus)
     {
-      _logger = loggerFactory.CreateLogger<DispatchService>();
+      _logger = logger;
       _messageBus = messageBus;
     }
 

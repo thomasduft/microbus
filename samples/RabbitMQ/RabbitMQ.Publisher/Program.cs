@@ -1,6 +1,9 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using RabbitMQ.MessageBus;
 using RabbitMQ.Messages;
-using tomware.Microbus.RabbitMQ;
+using tomware.Microbus.Core;
 
 namespace RabbitMQ.Publisher
 {
@@ -8,11 +11,25 @@ namespace RabbitMQ.Publisher
   {
     static void Main(string[] args)
     {
-      var bus = new RabbitMQMessageBus();
+      IServiceCollection services = new ServiceCollection();
+      services.AddLogging();
+
+      services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
+      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
+        ctx => new RabbitMQMessageBusConfiguration(
+          "Publisher",
+          "host=localhost;username=guest;password=guest",
+        5)
+      );
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
+
+      IServiceProvider provider = services.BuildServiceProvider();
+      IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+
       var messages = 5000;
       for (int i = 0; i < messages; i++)
       {
-        bus.PublishAsync(new Message
+        messageBus.PublishAsync(new Message
         {
           Id = i,
           Name = $"MyNumberIs_{i}"
@@ -20,7 +37,7 @@ namespace RabbitMQ.Publisher
       }
 
       Console.WriteLine($"Sent {messages} messages...");
-      Console.ReadKey();
+      Console.Read();
     }
   }
 }
