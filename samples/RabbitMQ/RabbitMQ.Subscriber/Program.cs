@@ -17,9 +17,9 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
       services.AddLogging();
 
       services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
-      services.AddSingleton<IRabbitMQMessageBusConfiguration, DefaultRabbitMQMessageBusConfiguration>(
-        ctx => new DefaultRabbitMQMessageBusConfiguration(
-          "ProgrammSubscriber", 
+      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
+        ctx => new RabbitMQMessageBusConfiguration(
+          "Subscriber", 
           "host=localhost;username=guest;password=guest", 
         5)
       );

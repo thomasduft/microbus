@@ -9,13 +9,13 @@ namespace RabbitMQ.MessageBus
     int RetryCount { get; }
   }
 
-  public class DefaultRabbitMQMessageBusConfiguration : IRabbitMQMessageBusConfiguration
+  public class RabbitMQMessageBusConfiguration : IRabbitMQMessageBusConfiguration
   {
     private readonly string _clientName;
     private readonly string _connectionString;
     private readonly int _retryCount;
 
-    public DefaultRabbitMQMessageBusConfiguration(
+    public RabbitMQMessageBusConfiguration(
       string clientName,
       string connectionString,
       int retryCount

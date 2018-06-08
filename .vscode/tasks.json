@@ -20,6 +20,16 @@
         "${workspaceFolder}/samples/RabbitMQ/RabbitMQ.Publisher/RabbitMQ.Publisher.csproj"
       ],
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-webapi",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/samples/RabbitMQ/RabbitMQ.WebApi/RabbitMQ.WebApi.csproj"
+      ],
+      "problemMatcher": "$msCompile"
     }
   ]
 }

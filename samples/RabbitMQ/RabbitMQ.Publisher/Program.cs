@@ -15,9 +15,9 @@ namespace RabbitMQ.Publisher
       services.AddLogging();
 
       services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
-      services.AddSingleton<IRabbitMQMessageBusConfiguration, DefaultRabbitMQMessageBusConfiguration>(
-        ctx => new DefaultRabbitMQMessageBusConfiguration(
-          "ProgrammPublisher",
+      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
+        ctx => new RabbitMQMessageBusConfiguration(
+          "Publisher",
           "host=localhost;username=guest;password=guest",
         5)
       );

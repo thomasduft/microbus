@@ -37,10 +37,17 @@ namespace RabbitMQ.WebApi
       });
 
       // Services
+      services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
+      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
+        ctx => new RabbitMQMessageBusConfiguration(
+          "WebApi",
+          "host=localhost;username=guest;password=guest",
+        5)
+      );
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
-      services.AddTransient<IDispatchService, DispatchService>();
-
       services.AddTransient<DispatchMessageHandler>();
+
+      services.AddTransient<IDispatchService, DispatchService>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,7 +78,8 @@ namespace RabbitMQ.WebApi
     private void OnShutdown(IApplicationBuilder app)
     {
       var messageBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
-      if (messageBus != null) {
+      if (messageBus != null)
+      {
         ((RabbitMQMessageBus)messageBus).Dispose();
       }
     }
