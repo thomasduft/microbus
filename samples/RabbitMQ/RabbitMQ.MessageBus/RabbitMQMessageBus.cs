@@ -115,12 +115,7 @@ namespace RabbitMQ.MessageBus
       _subscriptions.Clear();
     }
 
-    private string CreateQueueName(string clientName)
-    {
-      return $"tw.{clientName.ToLowerInvariant()}";
-    }
-
-    private IConnectionFactory CreateConnectionFactory(string connection)
+    public static IConnectionFactory CreateConnectionFactory(string connection)
     {
       var connectionString = new ConnectionString(connection);
 
@@ -133,6 +128,11 @@ namespace RabbitMQ.MessageBus
       };
 
       return factory;
+    }
+
+    private string CreateQueueName(string clientName)
+    {
+      return $"tw.{clientName.ToLowerInvariant()}";
     }
 
     private IModel CreateConsumerChannel()

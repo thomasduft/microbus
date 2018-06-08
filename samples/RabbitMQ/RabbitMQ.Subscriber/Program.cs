@@ -5,6 +5,7 @@ using System.Threading;
 using RabbitMQ.Messages;
 using RabbitMQ.MessageBus;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace tomware.Microbus.RabbitMQ.Subscriber
 {
@@ -13,7 +14,24 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
     static void Main(string[] args)
     {
       IServiceCollection services = new ServiceCollection();
-      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
+      services.AddLogging();
+
+      var clientName = "ProgrammSubscriber";
+      var connection = "host=localhost:5672;username=u23567;password=pw";
+
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>((ctx) =>
+      {
+        return new RabbitMQMessageBus(
+          new LoggerFactory().CreateLogger<RabbitMQMessageBus>(),
+          new DefaultRabbitMQPersistentConnection(
+            RabbitMQMessageBus.CreateConnectionFactory(connection),
+            clientName,
+             new LoggerFactory().CreateLogger<DefaultRabbitMQPersistentConnection>()
+          ),
+          clientName
+        );
+      });
+
       services.AddSingleton<MessageMessageHandler>();
       services.AddSingleton<DispatchMessageMessageHandler>();
       IServiceProvider provider = services.BuildServiceProvider();
