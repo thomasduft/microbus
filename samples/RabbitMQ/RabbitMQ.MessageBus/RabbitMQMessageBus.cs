@@ -20,6 +20,8 @@ namespace RabbitMQ.MessageBus
     public const string BROKER_NAME = "tw.messagebus";
     public const string BROKER_STRATEGY = "fanout";
 
+    private readonly IServiceProvider _serviceProvider;
+
     private readonly ILogger<RabbitMQMessageBus> _logger;
     private readonly IRabbitMQPersistentConnection _persistentConnection;
     private readonly int _retryCount;
@@ -30,15 +32,16 @@ namespace RabbitMQ.MessageBus
 
     public RabbitMQMessageBus(
       ILogger<RabbitMQMessageBus> logger,
+      IServiceProvider serviceProvider,
       IRabbitMQPersistentConnection persistentConnection,
-      string clientName,
-      int retryCount = 5
+      IRabbitMQMessageBusConfiguration rabbitMQMessageBusConfiguration
     )
     {
       _logger = logger;
+      _serviceProvider = serviceProvider;
       _persistentConnection = persistentConnection;
-      _queueName = CreateQueueName(clientName);
-      _retryCount = retryCount;
+      _queueName = CreateQueueName(rabbitMQMessageBusConfiguration.ClientName);
+      _retryCount = rabbitMQMessageBusConfiguration.RetryCount;
 
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
       _consumerChannel = CreateConsumerChannel();
@@ -94,8 +97,8 @@ namespace RabbitMQ.MessageBus
       where TMessage : class
     {
       var subscription = new Subscription(typeof(THandler), typeof(TMessage));
-      DoInternalSubscription(subscription.MessageTypeName);
       _subscriptions.TryAdd(subscription.Id, subscription);
+      DoInternalSubscription(subscription.MessageTypeName);
 
       return subscription.Id;
     }
@@ -113,21 +116,6 @@ namespace RabbitMQ.MessageBus
       }
 
       _subscriptions.Clear();
-    }
-
-    public static IConnectionFactory CreateConnectionFactory(string connection)
-    {
-      var connectionString = new ConnectionString(connection);
-
-      ConnectionFactory factory = new ConnectionFactory
-      {
-        UserName = connectionString.GetValueFromPart("username"),
-        Password = connectionString.GetValueFromPart("password"),
-        HostName = connectionString.GetValueFromPart("host")
-        // VirtualHost = connectionString.GetValueFromPart("vhost")
-      };
-
-      return factory;
     }
 
     private string CreateQueueName(string clientName)
@@ -186,7 +174,7 @@ namespace RabbitMQ.MessageBus
           try
           {
             var messageToHandle = JsonConvert.DeserializeObject(message, subscription.MessageType);
-            // await subscription.Handle( DispatchToHandler(messageToHandle);
+            await subscription.Handle(_serviceProvider, messageToHandle);
           }
           catch (Exception ex)
           {
@@ -226,6 +214,9 @@ namespace RabbitMQ.MessageBus
 
     private class Subscription
     {
+      private Type _concreteHandler;
+      private object _handler;
+
       private Type _handlerType { get; }
       private Type _messageType { get; }
 
@@ -246,44 +237,19 @@ namespace RabbitMQ.MessageBus
         _messageType = messageType;
       }
 
-      public Task Handle<TMessage>(
-        IServiceProvider serviceProvider,
-        TMessage message,
-        CancellationToken token
-      )
+      public async Task Handle(IServiceProvider serviceProvider, object message)
       {
-        var instance = serviceProvider.GetService(_handlerType);
-        var concreteType = typeof(IMessageHandler<>).MakeGenericType(_messageType);
-        var handler = instance as IMessageHandler<TMessage>;
+        if (this._concreteHandler == null || this._handler == null) {
+          this._handler = serviceProvider.GetService(_handlerType);
+          this._concreteHandler = typeof(IMessageHandler<>).MakeGenericType(_messageType);
+        }
 
-        return handler.Handle(message, token);
+        await (Task)this._concreteHandler.GetMethod("Handle")
+          .Invoke(this._handler, new object[] { 
+            message,
+            default(CancellationToken)
+          });
       }
-    }
-  }
-
-  internal class ConnectionString
-  {
-    // host=localhost:5672;username=guest;password=guest
-    private readonly string _connection;
-    private readonly string[] _parts;
-    public ConnectionString(string connection)
-    {
-      _connection = connection;
-      _parts = _connection.Split(';');
-    }
-
-    public bool HasPart(string part)
-    {
-      return _parts.Any(p => p.ToLowerInvariant().StartsWith(part.ToLowerInvariant()));
-    }
-
-    public string GetValueFromPart(string part)
-    {
-      if (!HasPart(part)) return string.Empty;
-
-      var pair = _parts.First(p => p.ToLowerInvariant().StartsWith(part.ToLowerInvariant()));
-      var value = pair.Split('=')[1];
-      return value;
     }
   }
 }

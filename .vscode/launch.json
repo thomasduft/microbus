@@ -8,7 +8,7 @@
       "name": ".NET Core Launch Publisher (console)",
       "type": "coreclr",
       "request": "launch",
-      "preLaunchTask": "build",
+      "preLaunchTask": "build-publisher",
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/samples/RabbitMQ/RabbitMQ.Publisher/bin/Debug/netcoreapp2.0/RabbitMQ.Publisher.dll",
       "args": [],
@@ -22,7 +22,7 @@
       "name": ".NET Core Launch Subscriber (console)",
       "type": "coreclr",
       "request": "launch",
-      
+      "preLaunchTask": "build-subscriber",
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/samples/RabbitMQ/RabbitMQ.Subscriber/bin/Debug/netcoreapp2.0/RabbitMQ.Subscriber.dll",
       "args": [],

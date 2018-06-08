@@ -16,24 +16,17 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
       IServiceCollection services = new ServiceCollection();
       services.AddLogging();
 
-      var clientName = "ProgrammSubscriber";
-      var connection = "host=localhost:5672;username=u23567;password=pw";
-
-      services.AddSingleton<IMessageBus, RabbitMQMessageBus>((ctx) =>
-      {
-        return new RabbitMQMessageBus(
-          new LoggerFactory().CreateLogger<RabbitMQMessageBus>(),
-          new DefaultRabbitMQPersistentConnection(
-            RabbitMQMessageBus.CreateConnectionFactory(connection),
-            clientName,
-             new LoggerFactory().CreateLogger<DefaultRabbitMQPersistentConnection>()
-          ),
-          clientName
-        );
-      });
-
+      services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
+      services.AddSingleton<IRabbitMQMessageBusConfiguration, DefaultRabbitMQMessageBusConfiguration>(
+        ctx => new DefaultRabbitMQMessageBusConfiguration(
+          "ProgrammSubscriber", 
+          "host=localhost;username=guest;password=guest", 
+        5)
+      );
+      services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddSingleton<MessageMessageHandler>();
       services.AddSingleton<DispatchMessageMessageHandler>();
+
       IServiceProvider provider = services.BuildServiceProvider();
 
       IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
@@ -41,7 +34,7 @@ namespace tomware.Microbus.RabbitMQ.Subscriber
       messageBus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>();
 
       Console.WriteLine("Waiting for messages...");
-      Console.ReadKey();
+      Console.Read();
     }
   }
 
