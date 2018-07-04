@@ -71,13 +71,7 @@ namespace tomware.Microbus.Core
 
       public Guid Id { get; }
 
-      public Type HandlerType => _handlerType;
-
       public Type MessageType => _messageType;
-
-      public string HandlerTypeName => _handlerType.Name;
-
-      public string MessageTypeName => _messageType.Name;
 
       public Subscription(Type handlerType, Type messageType)
       {
@@ -86,15 +80,13 @@ namespace tomware.Microbus.Core
         _messageType = messageType;
       }
 
-      public Task Handle<TMessage>(
+      internal Task Handle<TMessage>(
         IServiceProvider serviceProvider,
         TMessage message,
         CancellationToken token
       )
       {
-        var instance = serviceProvider.GetService(_handlerType);
-        var concreteType = typeof(IMessageHandler<>).MakeGenericType(_messageType);
-        var handler = instance as IMessageHandler<TMessage>;
+        var handler = serviceProvider.GetService(_handlerType) as IMessageHandler<TMessage>;
 
         return handler.Handle(message, token);
       }
