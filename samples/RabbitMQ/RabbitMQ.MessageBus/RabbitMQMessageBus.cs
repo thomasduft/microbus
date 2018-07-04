@@ -97,8 +97,8 @@ namespace RabbitMQ.MessageBus
       where TMessage : class
     {
       var subscription = new Subscription(typeof(THandler), typeof(TMessage));
-      _subscriptions.TryAdd(subscription.Id, subscription);
       DoInternalSubscription(subscription.MessageTypeName);
+      _subscriptions.TryAdd(subscription.Id, subscription);
 
       return subscription.Id;
     }
