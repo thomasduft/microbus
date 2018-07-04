@@ -222,11 +222,7 @@ namespace RabbitMQ.MessageBus
 
       public Guid Id { get; }
 
-      public Type HandlerType => _handlerType;
-
       public Type MessageType => _messageType;
-
-      public string HandlerTypeName => _handlerType.Name;
 
       public string MessageTypeName => _messageType.Name;
 
