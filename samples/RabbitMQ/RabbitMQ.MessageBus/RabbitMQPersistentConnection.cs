@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Polly;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -32,14 +33,15 @@ namespace RabbitMQ.MessageBus
 
     public DefaultRabbitMQPersistentConnection(
       ILogger<DefaultRabbitMQPersistentConnection> logger,
-      IRabbitMQMessageBusConfiguration rabbitMQMessageBusConfiguration
+      IOptions<RabbitMQMessageBusConfiguration> rabbitMQMessageBusConfiguration
     )
     {
-      _connectionFactory = DefaultRabbitMQPersistentConnection
-        .CreateConnectionFactory(rabbitMQMessageBusConfiguration.ConnectionString);
-      _clientName = rabbitMQMessageBusConfiguration.ClientName ?? "pleaseAddClientName";
+      var config = rabbitMQMessageBusConfiguration.Value;
+
+      _connectionFactory = CreateConnectionFactory(config.ConnectionString);
+      _clientName = config.ClientName ?? "pleaseAddClientName";
       _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-      _retryCount = rabbitMQMessageBusConfiguration.RetryCount;
+      _retryCount = config.RetryCount;
     }
 
     public bool IsConnected

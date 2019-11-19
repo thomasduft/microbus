@@ -38,12 +38,15 @@ namespace RabbitMQ.WebApi
 
       // Services
       services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
-      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
-        ctx => new RabbitMQMessageBusConfiguration(
-          "WebApi",
-          "host=localhost;username=guest;password=guest",
-        5)
-      );
+      services.Configure<RabbitMQMessageBusConfiguration>(opt =>
+      {
+        opt.ClientName = "WebApi";
+        opt.QueueName = "tw.WebApi";
+        opt.BrokerName = "tw.messages";
+        opt.BrokerStrategy = "fanout";
+        opt.ConnectionString = "host=localhost;username=guest;password=guest";
+        opt.RetryCount = 5;
+      });
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddTransient<DispatchMessageHandler>();
 

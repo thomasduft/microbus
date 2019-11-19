@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Polly;
 using RabbitMQ.Client;
@@ -17,31 +18,37 @@ namespace RabbitMQ.MessageBus
 {
   public class RabbitMQMessageBus : IMessageBus, IDisposable
   {
-    public const string BROKER_NAME = "tw.messagebus";
-    public const string BROKER_STRATEGY = "fanout";
-
     private readonly IServiceProvider _serviceProvider;
-
     private readonly ILogger<RabbitMQMessageBus> _logger;
     private readonly IRabbitMQPersistentConnection _persistentConnection;
+
+    private readonly string _queueName;
+    private readonly string _brokerName;
+    private readonly string _brokerStrategy;
     private readonly int _retryCount;
-    private IModel _consumerChannel;
-    private string _queueName;
+    private readonly bool _confirmSelect;
 
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
+
+    private IModel _consumerChannel;
 
     public RabbitMQMessageBus(
       ILogger<RabbitMQMessageBus> logger,
       IServiceProvider serviceProvider,
       IRabbitMQPersistentConnection persistentConnection,
-      IRabbitMQMessageBusConfiguration rabbitMQMessageBusConfiguration
+      IOptions<RabbitMQMessageBusConfiguration> rabbitMQMessageBusConfiguration
     )
     {
       _logger = logger;
       _serviceProvider = serviceProvider;
       _persistentConnection = persistentConnection;
-      _queueName = CreateQueueName(rabbitMQMessageBusConfiguration.ClientName);
-      _retryCount = rabbitMQMessageBusConfiguration.RetryCount;
+
+      var config = rabbitMQMessageBusConfiguration.Value;
+      _queueName = config.QueueName;
+      _brokerName = config.BrokerName;
+      _brokerStrategy = config.BrokerStrategy;
+      _retryCount = config.RetryCount;
+      _confirmSelect = config.ConfirmSelect;
 
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
       _consumerChannel = CreateConsumerChannel();
@@ -71,10 +78,15 @@ namespace RabbitMQ.MessageBus
       {
         var messageType = message.GetType().Name;
 
-        channel.ExchangeDeclare(exchange: BROKER_NAME, type: BROKER_STRATEGY);
+        channel.ExchangeDeclare(exchange: _brokerName, type: _brokerStrategy);
 
         var rawMessage = JsonConvert.SerializeObject(message);
         var body = Encoding.UTF8.GetBytes(rawMessage);
+
+        if (_confirmSelect)
+        {
+          channel.ConfirmSelect();
+        }
 
         policy.Execute(() =>
         {
@@ -82,7 +94,7 @@ namespace RabbitMQ.MessageBus
           properties.DeliveryMode = 2; // persistent
 
           channel.BasicPublish(
-            exchange: BROKER_NAME,
+            exchange: this._brokerName,
             routingKey: messageType,
             basicProperties: properties,
             body: body);
@@ -118,11 +130,6 @@ namespace RabbitMQ.MessageBus
       _subscriptions.Clear();
     }
 
-    private string CreateQueueName(string clientName)
-    {
-      return $"tw.{clientName.ToLowerInvariant()}";
-    }
-
     private IModel CreateConsumerChannel()
     {
       if (!_persistentConnection.IsConnected)
@@ -132,7 +139,7 @@ namespace RabbitMQ.MessageBus
 
       var channel = _persistentConnection.CreateModel();
 
-      channel.ExchangeDeclare(exchange: BROKER_NAME, type: BROKER_STRATEGY);
+      channel.ExchangeDeclare(exchange: _brokerName, type: _brokerStrategy);
 
       channel.QueueDeclare(queue: _queueName,
                            durable: true,
@@ -205,7 +212,7 @@ namespace RabbitMQ.MessageBus
         {
           channel.QueueBind(
             queue: _queueName,
-            exchange: BROKER_NAME,
+            exchange: _brokerName,
             routingKey: messageType
           );
         }
@@ -235,13 +242,14 @@ namespace RabbitMQ.MessageBus
 
       public async Task Handle(IServiceProvider serviceProvider, object message)
       {
-        if (this._concreteHandler == null || this._handler == null) {
+        if (this._concreteHandler == null || this._handler == null)
+        {
           this._handler = serviceProvider.GetService(_handlerType);
           this._concreteHandler = typeof(IMessageHandler<>).MakeGenericType(_messageType);
         }
 
         await (Task)this._concreteHandler.GetMethod("Handle")
-          .Invoke(this._handler, new object[] { 
+          .Invoke(this._handler, new object[] {
             message,
             default(CancellationToken)
           });

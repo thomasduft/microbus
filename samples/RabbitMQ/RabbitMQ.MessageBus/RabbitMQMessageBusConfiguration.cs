@@ -1,33 +1,13 @@
 namespace RabbitMQ.MessageBus
 {
-  public interface IRabbitMQMessageBusConfiguration
+  public class RabbitMQMessageBusConfiguration
   {
-    string ClientName { get; }
-
-    string ConnectionString { get; }
-    
-    int RetryCount { get; }
-  }
-
-  public class RabbitMQMessageBusConfiguration : IRabbitMQMessageBusConfiguration
-  {
-    private readonly string _clientName;
-    private readonly string _connectionString;
-    private readonly int _retryCount;
-
-    public RabbitMQMessageBusConfiguration(
-      string clientName,
-      string connectionString,
-      int retryCount
-    ) {
-      this._clientName = clientName;
-      this._connectionString = connectionString;
-      this._retryCount = retryCount;
-    }
-
-    public string ClientName => this._clientName;
-    public string ConnectionString => this._connectionString;
-    public int RetryCount => this._retryCount;
-
+    public string ClientName { get; set; }
+    public string QueueName { get; set; }
+    public string BrokerName { get; set; }
+    public string BrokerStrategy { get; set; }
+    public string ConnectionString { get; set; }
+    public int RetryCount { get; set; }
+    public bool ConfirmSelect { get; set; }
   }
 }

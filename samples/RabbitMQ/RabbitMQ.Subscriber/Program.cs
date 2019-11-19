@@ -1,11 +1,10 @@
-using System;
-using tomware.Microbus.Core;
-using System.Threading.Tasks;
-using System.Threading;
-using RabbitMQ.Messages;
-using RabbitMQ.MessageBus;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using RabbitMQ.MessageBus;
+using RabbitMQ.Messages;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using tomware.Microbus.Core;
 
 namespace RabbitMQ.Subscriber
 {
@@ -17,12 +16,15 @@ namespace RabbitMQ.Subscriber
       services.AddLogging();
 
       services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
-      services.AddSingleton<IRabbitMQMessageBusConfiguration, RabbitMQMessageBusConfiguration>(
-        ctx => new RabbitMQMessageBusConfiguration(
-          "Subscriber", 
-          "host=localhost;username=guest;password=guest", 
-        5)
-      );
+      services.Configure<RabbitMQMessageBusConfiguration>(opt =>
+        {
+          opt.ClientName = "Subscriber";
+          opt.QueueName = "tw.Subscriber";
+          opt.BrokerName = "tw.messages";
+          opt.BrokerStrategy = "fanout";
+          opt.ConnectionString = "host=localhost;username=guest;password=guest";
+          opt.RetryCount = 5;
+        });
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddSingleton<MessageMessageHandler>();
       services.AddSingleton<DispatchMessageMessageHandler>();
