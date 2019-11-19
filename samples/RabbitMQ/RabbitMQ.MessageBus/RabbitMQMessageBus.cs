@@ -86,6 +86,18 @@ namespace RabbitMQ.MessageBus
         if (_confirmSelect)
         {
           channel.ConfirmSelect();
+          channel.BasicAcks += (sender, ea) =>
+          {
+            // code when message is confirmed
+            _logger.LogTrace("Ack for message {Message}", rawMessage);
+            Console.WriteLine($"Ack for message {rawMessage}");
+          };
+          channel.BasicNacks += (sender, ea) =>
+          {
+            //code when message is nack-ed
+            _logger.LogTrace("Nack for message {Message}", rawMessage);
+            Console.WriteLine($"Nack for message {rawMessage}");
+          };
         }
 
         policy.Execute(() =>

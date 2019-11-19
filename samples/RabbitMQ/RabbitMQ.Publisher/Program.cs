@@ -22,6 +22,7 @@ namespace RabbitMQ.Publisher
         opt.BrokerStrategy = "fanout";
         opt.ConnectionString = "host=localhost;username=guest;password=guest";
         opt.RetryCount = 5;
+        opt.ConfirmSelect = false;
       });
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
 
