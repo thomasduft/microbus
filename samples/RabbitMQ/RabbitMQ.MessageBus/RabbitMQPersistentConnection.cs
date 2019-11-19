@@ -29,7 +29,7 @@ namespace RabbitMQ.MessageBus
     IConnection _connection;
     bool _disposed;
 
-    object sync_root = new object();
+    readonly object sync_root = new object();
 
     public DefaultRabbitMQPersistentConnection(
       ILogger<DefaultRabbitMQPersistentConnection> logger,

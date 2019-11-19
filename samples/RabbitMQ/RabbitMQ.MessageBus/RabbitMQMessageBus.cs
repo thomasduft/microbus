@@ -7,6 +7,7 @@ using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -31,6 +32,7 @@ namespace RabbitMQ.MessageBus
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
 
     private IModel _consumerChannel;
+    private ConcurrentDictionary<ulong, string> _outstandingConfirms;
 
     public RabbitMQMessageBus(
       ILogger<RabbitMQMessageBus> logger,
@@ -52,6 +54,8 @@ namespace RabbitMQ.MessageBus
 
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
       _consumerChannel = CreateConsumerChannel();
+
+      _outstandingConfirms = new ConcurrentDictionary<ulong, string>();
     }
 
     public async Task PublishAsync<TMessage>(
@@ -71,13 +75,12 @@ namespace RabbitMQ.MessageBus
                   retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), (ex, time) =>
                   {
                     _logger.LogWarning(ex.ToString());
+                    Console.WriteLine(ex.ToString());
                   }
                 );
 
-      using (var channel = _persistentConnection.CreateModel())
+      using (IModel channel = _persistentConnection.CreateModel())
       {
-        var messageType = message.GetType().Name;
-
         channel.ExchangeDeclare(exchange: _brokerName, type: _brokerStrategy);
 
         var rawMessage = JsonConvert.SerializeObject(message);
@@ -86,17 +89,17 @@ namespace RabbitMQ.MessageBus
         if (_confirmSelect)
         {
           channel.ConfirmSelect();
-          channel.BasicAcks += (sender, ea) =>
-          {
-            // code when message is confirmed
-            _logger.LogTrace("Ack for message {Message}", rawMessage);
-            Console.WriteLine($"Ack for message {rawMessage}");
-          };
+          _outstandingConfirms.TryAdd(channel.NextPublishSeqNo, rawMessage);
+          channel.BasicAcks += (sender, ea) => CleanOutstandingConfirms(
+            ea.DeliveryTag,
+            ea.Multiple
+          );
           channel.BasicNacks += (sender, ea) =>
           {
             //code when message is nack-ed
-            _logger.LogTrace("Nack for message {Message}", rawMessage);
-            Console.WriteLine($"Nack for message {rawMessage}");
+            _outstandingConfirms.TryGetValue(ea.DeliveryTag, out string value);
+            Console.WriteLine($"Message with body {value} has been nack-ed. Sequence number: {ea.DeliveryTag}, multiple: {ea.Multiple}");
+            CleanOutstandingConfirms(ea.DeliveryTag, ea.Multiple);
           };
         }
 
@@ -107,7 +110,7 @@ namespace RabbitMQ.MessageBus
 
           channel.BasicPublish(
             exchange: this._brokerName,
-            routingKey: messageType,
+            routingKey: message.GetType().Name,
             basicProperties: properties,
             body: body);
         });
@@ -165,7 +168,12 @@ namespace RabbitMQ.MessageBus
         var eventName = ea.RoutingKey;
         var message = Encoding.UTF8.GetString(ea.Body);
 
-        await ProcessEvent(eventName, message);
+        if (await ProcessEvent(eventName, message))
+        {
+          Console.WriteLine($"Ack for message {message} - {ea.DeliveryTag}");
+          // only if channel.BasicConsume - autoAck = false
+          // channel.BasicAck(ea.DeliveryTag, false);
+        }
       };
 
       channel.BasicConsume(queue: _queueName,
@@ -181,8 +189,9 @@ namespace RabbitMQ.MessageBus
       return channel;
     }
 
-    private async Task ProcessEvent(string messageType, string message)
+    private async Task<bool> ProcessEvent(string messageType, string message)
     {
+      bool processed = false;
       if (HasSubscriptionsForEvent(messageType))
       {
         var subscriptionsForMessageType = _subscriptions
@@ -194,15 +203,17 @@ namespace RabbitMQ.MessageBus
           {
             var messageToHandle = JsonConvert.DeserializeObject(message, subscription.MessageType);
             await subscription.Handle(_serviceProvider, messageToHandle);
+            processed = true;
           }
           catch (Exception ex)
           {
             _logger.LogWarning(ex.ToString());
+            processed = false;
           }
         }
       }
 
-      await Task.CompletedTask;
+      return processed;
     }
 
     private bool HasSubscriptionsForEvent(string messageType)
@@ -229,6 +240,38 @@ namespace RabbitMQ.MessageBus
           );
         }
       }
+    }
+
+    private void CleanOutstandingConfirms(ulong sequenceNumber, bool multiple)
+    {
+      // code when message is confirmed
+      if (multiple)
+      {
+        var confirmed = _outstandingConfirms.Where(k => k.Key <= sequenceNumber);
+        foreach (var entry in confirmed)
+        {
+          RemoveOutstandingConfirm(entry.Key, multiple);
+        }
+      }
+      else
+      {
+        RemoveOutstandingConfirm(sequenceNumber, multiple);
+      }
+    }
+
+    private bool RemoveOutstandingConfirm(ulong sequenceNumber, bool multiple)
+    {
+      bool result = false;
+
+      if (_outstandingConfirms.TryRemove(sequenceNumber, out string message))
+      {
+        _logger.LogTrace("Ack for message {Message}", message);
+        Debug.WriteLine($"Ack for message {message} - {sequenceNumber} - {multiple}");
+
+        result = true;
+      }
+
+      return result;
     }
 
     private class Subscription

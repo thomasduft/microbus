@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.MessageBus;
 using RabbitMQ.Messages;
 using System;
@@ -11,7 +12,9 @@ namespace RabbitMQ.Publisher
     static void Main(string[] args)
     {
       IServiceCollection services = new ServiceCollection();
-      services.AddLogging();
+      services
+        .AddLogging(cfg => cfg.AddConsole())
+        .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Trace);
 
       services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
       services.Configure<RabbitMQMessageBusConfiguration>(opt =>
@@ -22,14 +25,15 @@ namespace RabbitMQ.Publisher
         opt.BrokerStrategy = "fanout";
         opt.ConnectionString = "host=localhost;username=guest;password=guest";
         opt.RetryCount = 5;
-        opt.ConfirmSelect = false;
+        opt.ConfirmSelect = true;
       });
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
 
       IServiceProvider provider = services.BuildServiceProvider();
       IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
+      ILogger logger = provider.GetService<ILogger<Program>>();
 
-      var messages = 5000;
+      var messages = 100;
       for (int i = 0; i < messages; i++)
       {
         messageBus.PublishAsync(new Message
@@ -39,7 +43,7 @@ namespace RabbitMQ.Publisher
         });
       }
 
-      Console.WriteLine($"Sent {messages} messages...");
+      logger.LogInformation($"{messages} messages sent...");
       Console.Read();
     }
   }

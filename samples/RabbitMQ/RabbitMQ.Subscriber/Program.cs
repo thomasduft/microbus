@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.MessageBus;
 using RabbitMQ.Messages;
 using System;
@@ -13,7 +14,9 @@ namespace RabbitMQ.Subscriber
     static void Main(string[] args)
     {
       IServiceCollection services = new ServiceCollection();
-      services.AddLogging();
+      services
+        .AddLogging(cfg => cfg.AddConsole())
+        .Configure<LoggerFilterOptions>(cfg => cfg.MinLevel = LogLevel.Trace);
 
       services.AddSingleton<IRabbitMQPersistentConnection, DefaultRabbitMQPersistentConnection>();
       services.Configure<RabbitMQMessageBusConfiguration>(opt =>
@@ -34,8 +37,9 @@ namespace RabbitMQ.Subscriber
       IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
       messageBus.Subscribe<MessageMessageHandler, Message>();
       messageBus.Subscribe<DispatchMessageMessageHandler, DispatchMessage>();
+      ILogger logger = provider.GetService<ILogger<Program>>();
 
-      Console.WriteLine("Waiting for messages...");
+      logger.LogInformation("Waiting for messages...");
       Console.Read();
     }
   }
