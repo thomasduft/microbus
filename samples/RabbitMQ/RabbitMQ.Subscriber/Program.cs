@@ -7,7 +7,7 @@ using RabbitMQ.MessageBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace tomware.Microbus.RabbitMQ.Subscriber
+namespace RabbitMQ.Subscriber
 {
   class Program
   {
