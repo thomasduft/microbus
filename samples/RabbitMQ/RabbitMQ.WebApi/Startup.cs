@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RabbitMQ.MessageBus;
 using RabbitMQ.WebApi.MessageHandlers;
 using RabbitMQ.WebApi.Services;
@@ -22,7 +23,7 @@ namespace RabbitMQ.WebApi
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      services.AddMvc();
+      services.AddRouting(o => o.LowercaseUrls = true);
 
       // Swagger
       services.AddSwaggerGen(c =>
@@ -56,8 +57,8 @@ namespace RabbitMQ.WebApi
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(
       IApplicationBuilder app,
-      IHostingEnvironment env,
-      IApplicationLifetime appLifetime
+      IWebHostEnvironment env,
+      IHostApplicationLifetime appLifetime
     )
     {
       if (env.IsDevelopment())
@@ -69,13 +70,18 @@ namespace RabbitMQ.WebApi
       app.UseMessageHandlers();
       appLifetime.ApplicationStopping.Register(() => OnShutdown(app));
 
+      app.UseRouting();
+
       app.UseSwagger();
       app.UseSwaggerUI(c =>
       {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Modular API V1");
       });
 
-      app.UseMvc();
+      app.UseEndpoints(endpoints =>
+      {
+        endpoints.MapControllers();
+      });
     }
 
     private void OnShutdown(IApplicationBuilder app)
