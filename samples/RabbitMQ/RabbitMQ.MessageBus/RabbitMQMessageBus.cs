@@ -168,16 +168,20 @@ namespace RabbitMQ.MessageBus
         var eventName = ea.RoutingKey;
         var message = Encoding.UTF8.GetString(ea.Body);
 
-        if (await ProcessEvent(eventName, message))
+        if (await ProcessMessage(eventName, message))
         {
           Console.WriteLine($"Ack for message {message} - {ea.DeliveryTag}");
           // only if channel.BasicConsume - autoAck = false
-          // channel.BasicAck(ea.DeliveryTag, false);
+          channel.BasicAck(ea.DeliveryTag, false);
+        }
+        else
+        {
+          channel.BasicNack(ea.DeliveryTag, false, false);
         }
       };
 
       channel.BasicConsume(queue: _queueName,
-                           autoAck: true,
+                           autoAck: false,
                            consumer: consumer);
 
       channel.CallbackException += (sender, ea) =>
@@ -189,7 +193,7 @@ namespace RabbitMQ.MessageBus
       return channel;
     }
 
-    private async Task<bool> ProcessEvent(string messageType, string message)
+    private async Task<bool> ProcessMessage(string messageType, string message)
     {
       bool processed = false;
       if (HasSubscriptionsForEvent(messageType))
