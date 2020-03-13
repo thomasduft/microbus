@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using RabbitMQ.MessageBus;
 using RabbitMQ.WebApi.MessageHandlers;
 using RabbitMQ.WebApi.Services;
-using Swashbuckle.AspNetCore.Swagger;
 using tomware.Microbus.Core;
 
 namespace RabbitMQ.WebApi
@@ -28,12 +28,11 @@ namespace RabbitMQ.WebApi
       // Swagger
       services.AddSwaggerGen(c =>
       {
-        c.SwaggerDoc("v1", new Info
+        c.SwaggerDoc("v1", new OpenApiInfo
         {
           Version = "v1",
           Title = "API Documentation",
-          Description = "API Documentation",
-          TermsOfService = "N/A"
+          Description = "API Documentation"
         });
       });
 
