@@ -9,5 +9,7 @@ namespace RabbitMQ.MessageBus
     public string ConnectionString { get; set; }
     public int RetryCount { get; set; }
     public bool ConfirmSelect { get; set; }
+    public bool Persistent { get; set; }
+    public bool AutoAck { get; set; }
   }
 }

@@ -28,6 +28,8 @@ namespace RabbitMQ.MessageBus
     private readonly string _brokerStrategy;
     private readonly int _retryCount;
     private readonly bool _confirmSelect;
+    private readonly bool _persistent;
+    private readonly bool _autoAck;
 
     private readonly ConcurrentDictionary<Guid, Subscription> _subscriptions;
 
@@ -51,6 +53,8 @@ namespace RabbitMQ.MessageBus
       _brokerStrategy = config.BrokerStrategy;
       _retryCount = config.RetryCount;
       _confirmSelect = config.ConfirmSelect;
+      _persistent = config.Persistent;
+      _autoAck = config.AutoAck;
 
       _subscriptions = new ConcurrentDictionary<Guid, Subscription>();
       _consumerChannel = CreateConsumerChannel();
@@ -106,7 +110,7 @@ namespace RabbitMQ.MessageBus
         policy.Execute(() =>
         {
           var properties = channel.CreateBasicProperties();
-          properties.DeliveryMode = 2; // persistent
+          if (this._persistent) properties.DeliveryMode = 2; // persistent
 
           channel.BasicPublish(
             exchange: this._brokerName,
@@ -166,22 +170,26 @@ namespace RabbitMQ.MessageBus
       consumer.Received += async (model, ea) =>
       {
         var eventName = ea.RoutingKey;
-        var message = Encoding.UTF8.GetString(ea.Body);
+        var message = Encoding.UTF8.GetString(ea.Body.ToArray());
 
-        if (await ProcessMessage(eventName, message))
+        var processed = await ProcessMessage(eventName, message);
+        if (!this._autoAck) // only if channel.BasicConsume - autoAck = false
         {
-          Console.WriteLine($"Ack for message {message} - {ea.DeliveryTag}");
-          // only if channel.BasicConsume - autoAck = false
-          channel.BasicAck(ea.DeliveryTag, false);
-        }
-        else
-        {
-          channel.BasicNack(ea.DeliveryTag, false, false);
+          if (processed)
+          {
+            Console.WriteLine($"Ack for message {message} - {ea.DeliveryTag}");
+
+            channel.BasicAck(ea.DeliveryTag, false);
+          }
+          else
+          {
+            channel.BasicNack(ea.DeliveryTag, false, false);
+          }
         }
       };
 
       channel.BasicConsume(queue: _queueName,
-                           autoAck: false,
+                           autoAck: this._autoAck,
                            consumer: consumer);
 
       channel.CallbackException += (sender, ea) =>

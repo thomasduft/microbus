@@ -25,8 +25,11 @@ namespace RabbitMQ.Subscriber
           opt.QueueName = "tw.Subscriber";
           opt.BrokerName = "tw.messages";
           opt.BrokerStrategy = "fanout";
-          opt.ConnectionString = "host=localhost;username=guest;password=guest";
+          opt.ConnectionString = "host=localhost;username=wincos;password=wincos";
           opt.RetryCount = 5;
+          opt.ConfirmSelect = false;
+          opt.Persistent = false;
+          opt.AutoAck = true;
         });
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
       services.AddSingleton<MessageMessageHandler>();
@@ -46,12 +49,18 @@ namespace RabbitMQ.Subscriber
 
   public class MessageMessageHandler : IMessageHandler<Message>
   {
+    private int sleep = 0;
+
     public async Task Handle(
       Message message,
       CancellationToken token = default(CancellationToken)
     )
     {
       Console.WriteLine($"Message received: {message}");
+      if (this.sleep > 0)
+      {
+        Thread.Sleep(this.sleep);
+      }
 
       await Task.CompletedTask;
     }

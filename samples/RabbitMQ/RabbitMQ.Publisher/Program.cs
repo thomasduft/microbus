@@ -23,9 +23,11 @@ namespace RabbitMQ.Publisher
         opt.QueueName = "tw.Publisher";
         opt.BrokerName = "tw.messages";
         opt.BrokerStrategy = "fanout";
-        opt.ConnectionString = "host=localhost;username=guest;password=guest";
+        opt.ConnectionString = "host=localhost;username=wincos;password=wincos";
         opt.RetryCount = 5;
-        opt.ConfirmSelect = true;
+        opt.ConfirmSelect = false;
+        opt.Persistent = false;
+        opt.AutoAck = true;
       });
       services.AddSingleton<IMessageBus, RabbitMQMessageBus>();
 
@@ -33,18 +35,29 @@ namespace RabbitMQ.Publisher
       IMessageBus messageBus = provider.GetRequiredService<IMessageBus>();
       ILogger logger = provider.GetService<ILogger<Program>>();
 
-      var messages = 100;
-      for (int i = 0; i < messages; i++)
+      // var messages = 100;
+      // for (int i = 0; i < messages; i++)
+      // {
+      //   messageBus.PublishAsync(new Message
+      //   {
+      //     Id = i,
+      //     Name = $"MyNumberIs_{i}"
+      //   });
+      // }
+
+      // logger.LogInformation($"{messages} messages sent...");
+      // Console.Read();
+
+      Random rnd = new Random();
+      while (true)
       {
+        var id = rnd.Next();
         messageBus.PublishAsync(new Message
         {
-          Id = i,
-          Name = $"MyNumberIs_{i}"
+          Id = id,
+          Name = $"MyNumberIs_{id}"
         });
       }
-
-      logger.LogInformation($"{messages} messages sent...");
-      Console.Read();
     }
   }
 }
