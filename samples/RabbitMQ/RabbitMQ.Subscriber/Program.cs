@@ -25,7 +25,7 @@ namespace RabbitMQ.Subscriber
           opt.QueueName = "tw.Subscriber";
           opt.BrokerName = "tw.messages";
           opt.BrokerStrategy = "fanout";
-          opt.ConnectionString = "host=localhost;username=wincos;password=wincos";
+          opt.ConnectionString = "host=localhost;username=guest;password=guest";
           opt.RetryCount = 5;
           opt.ConfirmSelect = false;
           opt.Persistent = false;
